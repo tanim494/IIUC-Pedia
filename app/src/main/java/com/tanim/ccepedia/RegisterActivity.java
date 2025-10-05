@@ -5,34 +5,29 @@ import android.os.Handler;
 import android.util.Patterns;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import android.widget.AutoCompleteTextView; // Import for the new Spinner replacement
+
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText nameEditText, idEditText, phoneEditText, emailEditText, passwordEditText;
-    private Spinner genderSpinner, semesterSpinner;
+    private TextInputEditText nameEditText, idEditText, phoneEditText, emailEditText, passwordEditText;
+    // Changed Spinner to AutoCompleteTextView
+    private AutoCompleteTextView genderAutoComplete, semesterAutoComplete;
     private Button registerButton;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String selectedTheme = HomeActivity.ThemePref.getTheme(this);
-
-        // Apply the theme before calling super.onCreate()
-        if (selectedTheme.equals(HomeActivity.ThemePref.THEME_BLUE)) {
-            setTheme(R.style.Theme_CCEPedia_Blue);
-        } else {
-            setTheme(R.style.Theme_CCEPedia_Green);
-        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
@@ -41,31 +36,33 @@ public class RegisterActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         // Initialize Views
+        // Using TextInputEditText instead of plain EditText for consistency
         nameEditText = findViewById(R.id.nameEditText);
         idEditText = findViewById(R.id.idEditText);
         phoneEditText = findViewById(R.id.phoneEditText);
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
-        genderSpinner = findViewById(R.id.genderSpinner);
-        semesterSpinner = findViewById(R.id.semesterSpinner);
+
+        // Correctly initialize AutoCompleteTextViews
+        genderAutoComplete = findViewById(R.id.genderSpinner); // Re-use the same ID
+        semesterAutoComplete = findViewById(R.id.semesterSpinner); // Re-use the same ID
+
         registerButton = findViewById(R.id.registerButton);
 
-        // Populate Semester Spinner
-        ArrayAdapter<String> semesterAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
-        semesterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        semesterAdapter.add("Select Semester");
+        // Populate Semester Dropdown
+        // Using a list of strings
+        String[] semesters = new String[9];
+        semesters[0] = "Select Semester";
         for (int i = 1; i <= 8; i++) {
-            semesterAdapter.add(String.valueOf(i));
+            semesters[i] = String.valueOf(i);
         }
-        semesterSpinner.setAdapter(semesterAdapter);
+        ArrayAdapter<String> semesterAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, semesters);
+        semesterAutoComplete.setAdapter(semesterAdapter);
 
-// Populate Gender Spinner
-        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
-        genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        genderAdapter.add("Select Gender");
-        genderAdapter.add("Male");
-        genderAdapter.add("Female");
-        genderSpinner.setAdapter(genderAdapter);
+        // Populate Gender Dropdown
+        String[] genders = {"Select Gender", "Male", "Female"};
+        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, genders);
+        genderAutoComplete.setAdapter(genderAdapter);
 
 
         // Register Button Click Listener
@@ -78,10 +75,13 @@ public class RegisterActivity extends AppCompatActivity {
         String phone = phoneEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
-        String gender = genderSpinner.getSelectedItem().toString();
-        String semester = semesterSpinner.getSelectedItem().toString();
 
-        if (name.isEmpty() || id.isEmpty() || phone.isEmpty() || email.isEmpty() || password.isEmpty()) {
+        // --- MODIFICATION HERE: Get text directly from AutoCompleteTextView ---
+        String gender = genderAutoComplete.getText().toString();
+        String semester = semesterAutoComplete.getText().toString();
+        // ---------------------------------------------------------------------
+
+        if (name.isEmpty() || id.isEmpty() || email.isEmpty() || password.isEmpty()) {
             showAlert("Please fill in all fields");
             return;
         }
@@ -91,17 +91,12 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        if (!phone.matches("\\d{11}")) {
-            showAlert("Invalid phone number");
-            return;
-        }
-
         if (!isStrongPassword(password)) {
-            showAlert("Password must be at least 6 characters long and include letters and numbers.");
+            showAlert("Password must be at least 6 characters long.");
             return;
         }
 
-        if (gender.equals("Select Gender") || semester.equals("Select Semester")) {
+        if (gender.equals("Select Gender") || gender.equals("") || gender.equals("Gender") || semester.equals("Semester") || semester.equals("Select Semester") || semester.equals("")) {
             showAlert("Please select both gender and semester");
             return;
         }
@@ -143,7 +138,7 @@ public class RegisterActivity extends AppCompatActivity {
                                                 });
                                     }
                                 } else {
-                                    Toast.makeText(this, authTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    showAlert(authTask.getException().getMessage());
                                     registerButton.setEnabled(true);
                                 }
                             });
@@ -156,9 +151,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private boolean isStrongPassword(String password) {
-        return password.length() >= 6 &&
-                password.matches(".*[a-z].*") &&
-                password.matches(".*\\d.*");
+        return password.length() >= 6;
     }
 
     private void showAlert(String message) {
@@ -170,7 +163,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
 
-    // User class to represent the user data
+    // User class to represent the user data (remains unchanged)
     public static class User {
         private String name;
         private String id;
@@ -179,6 +172,10 @@ public class RegisterActivity extends AppCompatActivity {
         private String gender;
         private String semester;
         private boolean verified;
+
+        public User() {
+            // Default constructor required for Firestore
+        }
 
         public User(String name, String id, String phone, String email, String gender, String semester) {
             this.name = name;

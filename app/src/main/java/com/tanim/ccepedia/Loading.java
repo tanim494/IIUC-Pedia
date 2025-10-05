@@ -20,14 +20,6 @@ public class Loading extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        String selectedTheme = HomeActivity.ThemePref.getTheme(this);
-
-        // Apply the theme before calling super.onCreate()
-        if (selectedTheme.equals(HomeActivity.ThemePref.THEME_BLUE)) {
-            setTheme(R.style.Theme_CCEPedia_Blue);
-        } else {
-            setTheme(R.style.Theme_CCEPedia_Green);
-        }
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
@@ -77,7 +69,7 @@ public class Loading extends AppCompatActivity {
         if (snapshot.exists()) {
             // ✅ Populate singleton
             UserData user = UserData.getInstance();
-            user.setId(snapshot.getString("id"));
+            user.setStudentId(snapshot.getString("id"));
             user.setName(snapshot.getString("name"));
             user.setEmail(snapshot.getString("email"));
             user.setGender(snapshot.getString("gender"));

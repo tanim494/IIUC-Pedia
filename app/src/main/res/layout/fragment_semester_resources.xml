@@ -1,50 +1,213 @@
-<!-- activity_semester.xml -->
-<LinearLayout
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_vertical"
-    android:padding="16dp"
-    >
+    android:layout_height="wrap_content"
+    android:background="@color/backgroundColor"
+    android:clipToPadding="false"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
 
-    <TextView
-        android:id="@+id/semester1"
-        style="@style/ButtonStyle"
-        android:text="1st Semester" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
-    <TextView
-        android:id="@+id/semester2"
-        style="@style/ButtonStyle"
-        android:text="2nd Semester" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Semester"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
 
-    <TextView
-        android:id="@+id/semester3"
-        style="@style/ButtonStyle"
-        android:text="3rd Semester" />
+        <!-- Semester 1 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSemester1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
 
-    <TextView
-        android:id="@+id/semester4"
-        style="@style/ButtonStyle"
-        android:text="4th Semester" />
+            <TextView
+                android:id="@+id/semester1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="1st Semester"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:drawablePadding="16dp"/>
+        </com.google.android.material.card.MaterialCardView>
 
-    <TextView
-        android:id="@+id/semester5"
-        style="@style/ButtonStyle"
-        android:text="5th Semester" />
+        <!-- Semester 2 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSemester2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
 
-    <TextView
-        android:id="@+id/semester6"
-        style="@style/ButtonStyle"
-        android:text="6th Semester" />
+            <TextView
+                android:id="@+id/semester2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="2nd Semester"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:drawablePadding="16dp"/>
+        </com.google.android.material.card.MaterialCardView>
 
-    <TextView
-        android:id="@+id/semester7"
-        style="@style/ButtonStyle"
-        android:text="7th Semester" />
+        <!-- Semester 3 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSemester3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
 
-    <TextView
-        android:id="@+id/semester8"
-        style="@style/ButtonStyle"
-        android:text="8th Semester" />
-</LinearLayout>
+            <TextView
+                android:id="@+id/semester3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="3rd Semester"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:drawablePadding="16dp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Semester 4 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSemester4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:id="@+id/semester4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="4th Semester"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:drawablePadding="16dp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Semester 5 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSemester5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:id="@+id/semester5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="5th Semester"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:drawablePadding="16dp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Semester 6 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSemester6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:id="@+id/semester6"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="6th Semester"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:drawablePadding="16dp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Semester 7 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSemester7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:id="@+id/semester7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="7th Semester"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:drawablePadding="16dp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Semester 8 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSemester8"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:id="@+id/semester8"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="8th Semester"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:drawablePadding="16dp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -7,60 +7,67 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.card.MaterialCardView; // New Import
+
 public class Resources extends Fragment {
+
+    // 1. Change member variables from TextView to MaterialCardView
+    private MaterialCardView cardFacebookPage;
+    private MaterialCardView cardFacebookFemPage;
+    private MaterialCardView cardSemesterResourcesPage;
+    private MaterialCardView cardBatchWise;
+    private MaterialCardView cardBusPage;
+    private MaterialCardView cardDriveLinks;
+
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // Ensure you are using the correct, updated XML layout file
         View rootView = inflater.inflate(R.layout.fragment_resources, container, false);
 
-        TextView facebookPage = rootView.findViewById(R.id.openFacebookPage);
-        TextView facebookFemPage = rootView.findViewById(R.id.openFacebookFemPage);
-        TextView semesterResourcesPage = rootView.findViewById(R.id.openSemesterResourcesPage);
-        TextView batchWise = rootView.findViewById(R.id.batchWise);
-        TextView busPage = rootView.findViewById(R.id.openBusPage);
-        TextView driveLinks = rootView.findViewById(R.id.openDriveLinks);
+        // 2. Initialize the new MaterialCardView IDs
+        cardFacebookPage = rootView.findViewById(R.id.cardFacebookPage);
+        cardFacebookFemPage = rootView.findViewById(R.id.cardFacebookFemPage);
+        cardSemesterResourcesPage = rootView.findViewById(R.id.cardSemesterResourcesPage);
+        cardBatchWise = rootView.findViewById(R.id.cardBatchWise);
+        cardBusPage = rootView.findViewById(R.id.cardBusPage);
+        cardDriveLinks = rootView.findViewById(R.id.cardDriveLinks);
 
-        facebookPage.setOnClickListener(v -> openWebPage("https://www.facebook.com/profile.php?id=100090282199663"));
+        // 3. Attach Click Listeners to the CardViews
+        cardFacebookPage.setOnClickListener(v -> openWebPage("https://www.facebook.com/profile.php?id=100090282199663"));
 
-        facebookFemPage.setOnClickListener(v -> openWebPage("https://www.facebook.com/profile.php?id=100091710725410"));
+        cardFacebookFemPage.setOnClickListener(v -> openWebPage("https://www.facebook.com/profile.php?id=100091710725410"));
 
-        batchWise.setOnClickListener(v -> showGenderDialog());
+        cardBatchWise.setOnClickListener(v -> showGenderDialog());
 
-        busPage.setOnClickListener(v -> {
-            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.Midcontainer, new BusScheduleFragment());
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
-        });
+        cardBusPage.setOnClickListener(v -> openFragment(new BusScheduleFragment()));
 
+        cardSemesterResourcesPage.setOnClickListener(v -> openFragment(new SemesterResources()));
 
-        semesterResourcesPage.setOnClickListener(v -> {
-            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.Midcontainer, new SemesterResources());
-            fragmentTransaction.addToBackStack(null); // Optional: Add transaction to the back stack
-            fragmentTransaction.commit();
-        });
-
-        driveLinks.setOnClickListener(v -> {
-            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.Midcontainer, new DriveLinksFragment());
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
-        });
+        cardDriveLinks.setOnClickListener(v -> openFragment(new DriveLinksFragment()));
 
         return rootView;
     }
 
+    // Helper method to open other Fragments (Improves code readability)
+    private void openFragment(Fragment fragment) {
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.Midcontainer, fragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+
     private void showGenderDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()); // Use requireContext()
         builder.setTitle("Select Section")
                 .setItems(new String[]{"Male", "Female"}, (dialog, which) -> {
                     String gender = (which == 0) ? "male" : "female";
@@ -72,6 +79,7 @@ public class Resources extends Fragment {
     private void openBatchWiseFragment(String gender) {
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        // Assuming BatchWiseFragment has a newInstance method for arguments
         fragmentTransaction.replace(R.id.Midcontainer, BatchWiseFragment.newInstance(gender));
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
@@ -81,5 +89,4 @@ public class Resources extends Fragment {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
     }
-
 }

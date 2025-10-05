@@ -2,7 +2,7 @@ package com.tanim.ccepedia;
 
 public class UserData {
     private static UserData instance;
-    private String id, name, email, gender, phone, semester, role;
+    private String studentId, name, email, gender, phone, semester, role;
 
     // Private constructor to prevent instantiation
     private UserData() {}
@@ -23,12 +23,12 @@ public class UserData {
         return name;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setStudentId(String id) {
+        this.studentId = id;
     }
 
-    public String getId() {
-        return id;
+    public String getStudentId() {
+        return studentId;
     }
 
     public void setEmail(String email) {

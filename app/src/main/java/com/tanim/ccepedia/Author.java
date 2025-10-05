@@ -19,6 +19,9 @@ public class Author extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_author, container, false);
 
+        TextView appVersion = view.findViewById(R.id.appVersionText);
+        appVersion.setText("App Version " + BuildConfig.VERSION_NAME);
+
         // GitHub Button
         LinearLayout githubButton = view.findViewById(R.id.githubButton);
         githubButton.setOnClickListener(view1 -> {
@@ -33,6 +36,7 @@ public class Author extends Fragment {
             startActivity(intent);
         });
 
+        //LinkedIn Button
         LinearLayout websiteButton = view.findViewById(R.id.linkedinButton);
         websiteButton.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.linkedin.com/in/tanim494/"));
@@ -45,12 +49,6 @@ public class Author extends Fragment {
             startActivity(intent);
         });
 
-        TextView requestButton = view.findViewById(R.id.requestButton);
-        requestButton.setOnClickListener(view1 -> {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://forms.gle/FbP5xcFKteDjGVZr5"));
-            startActivity(intent);
-        });
-
         LinearLayout authorMail = view.findViewById(R.id.authorMail);
         authorMail.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_SEND);
@@ -58,7 +56,6 @@ public class Author extends Fragment {
 
             intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"Tanim494@gmail.com"}); // Replace with the recipient's email address
             intent.putExtra(Intent.EXTRA_SUBJECT, "Request Feature or Suggestion for CCE Pedia"); // Set the email subject
-            intent.putExtra(Intent.EXTRA_TEXT, "I am <-Your Name->, from CCE Batch - . \n I have a suggestion for CCE Pedia. \n ............."); // Set the email body
 
             try {
                 startActivity(Intent.createChooser(intent, "Send Email"));

@@ -4,21 +4,42 @@ public class FacultyModel {
     private String name;
     private String designation;
     private String phone;
-    private String imageUrl;
+    private String photoUrl; // <-- This variable name must match the Firestore field
 
     public FacultyModel() {
         // Needed for Firestore deserialization
     }
 
-    public FacultyModel(String name, String designation, String phone, String imageUrl) {
-        this.name = name;
-        this.designation = designation;
-        this.phone = phone;
-        this.imageUrl = imageUrl;
+    public String getName() {
+        return name;
     }
 
-    public String getName() { return name; }
-    public String getDesignation() { return designation; }
-    public String getPhone() { return phone; }
-    public String getImageUrl() { return imageUrl; }
+    public String getDesignation() {
+        return designation;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    // Setters added for better practice
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDesignation(String designation) {
+        this.designation = designation;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
 }

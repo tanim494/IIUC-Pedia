@@ -5,7 +5,7 @@ public class Notice {
     private String text;
     private String link;
 
-    public Notice() { }
+    public Notice(String text, String link) { }
 
     public Notice(String id, String text, String link) {
         this.id = id;

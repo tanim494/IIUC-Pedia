@@ -9,6 +9,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ArrayAdapter;     // For creating the list of semesters
+import android.widget.AutoCompleteTextView; // For the semester dropdown component
 
 import androidx.fragment.app.Fragment;
 
@@ -20,7 +22,8 @@ public class ProfileFragment extends Fragment {
 
     private TextView nameText, idText, emailText, phoneText, semesterText;
     private TextInputLayout nameInputLayout, idInputLayout, phoneInputLayout, semesterInputLayout;
-    private EditText nameEdit, idEdit, phoneEdit, semesterEdit;
+    private EditText nameEdit, idEdit, phoneEdit;
+    private AutoCompleteTextView semesterEdit;
     private Button editButton, logoutButton, saveButton;
 
     private FirebaseAuth mAuth;
@@ -53,35 +56,32 @@ public class ProfileFragment extends Fragment {
         logoutButton = view.findViewById(R.id.logoutButton);
         saveButton = view.findViewById(R.id.saveButton);
 
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
-
-        loadUserData();
-
         editButton.setOnClickListener(v -> switchToEditMode());
         saveButton.setOnClickListener(v -> saveUserData());
         logoutButton.setOnClickListener(v -> logoutUser());
 
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        loadUserData();
         return view;
     }
 
     private void loadUserData() {
         UserData user = UserData.getInstance();
 
-        nameText.setText("Name: " + user.getName());
-        idText.setText("ID: " + user.getId());
+        nameText.setText(user.getName());
+        idText.setText("ID: " + user.getStudentId());
         emailText.setText("Email: " + user.getEmail());
         phoneText.setText("Phone: " + user.getPhone());
         semesterText.setText("Semester: " + user.getSemester());
 
         nameEdit.setText(user.getName());
-        idEdit.setText(user.getId());
+        idEdit.setText(user.getStudentId());
         phoneEdit.setText(user.getPhone());
         semesterEdit.setText(user.getSemester());
     }
 
     private void switchToEditMode() {
-        nameText.setVisibility(View.GONE);
         idText.setVisibility(View.GONE);
         phoneText.setVisibility(View.GONE);
         semesterText.setVisibility(View.GONE);
@@ -90,6 +90,11 @@ public class ProfileFragment extends Fragment {
         idInputLayout.setVisibility(View.VISIBLE);
         phoneInputLayout.setVisibility(View.VISIBLE);
         semesterInputLayout.setVisibility(View.VISIBLE);
+
+        String[] SEMESTERS = new String[] {"1", "2", "3", "4", "5", "6", "7", "8"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), R.layout.dropdown_item, SEMESTERS);
+        semesterEdit.setAdapter(adapter);
+        semesterEdit.setOnClickListener(v -> { semesterEdit.showDropDown(); });
 
         editButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.VISIBLE);
@@ -102,7 +107,6 @@ public class ProfileFragment extends Fragment {
         phoneInputLayout.setVisibility(View.GONE);
         semesterInputLayout.setVisibility(View.GONE);
 
-        nameText.setVisibility(View.VISIBLE);
         idText.setVisibility(View.VISIBLE);
         phoneText.setVisibility(View.VISIBLE);
         semesterText.setVisibility(View.VISIBLE);
@@ -118,13 +122,8 @@ public class ProfileFragment extends Fragment {
         String newPhone = phoneEdit.getText().toString().trim();
         String newSemester = semesterEdit.getText().toString().trim();
 
-        if (newName.isEmpty() || newId.isEmpty() || newPhone.isEmpty() || newSemester.isEmpty()) {
+        if (newName.isEmpty() || newId.isEmpty() || newSemester.isEmpty()) {
             Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (!newPhone.matches("\\d{11}")) {
-            Toast.makeText(getContext(), "Invalid phone number", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -137,7 +136,7 @@ public class ProfileFragment extends Fragment {
                 .addOnSuccessListener(aVoid -> {
                     UserData user = UserData.getInstance();
                     user.setName(newName);
-                    user.setId(newId);
+                    user.setStudentId(newId);
                     user.setPhone(newPhone);
                     user.setSemester(newSemester);
 

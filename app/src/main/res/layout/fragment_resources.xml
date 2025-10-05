@@ -1,44 +1,173 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_vertical"
-    android:padding="16dp"
-    android:background="@color/white"
-    >
+    android:background="@color/backgroundColor"
+    android:clipToPadding="false"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
 
-    <TextView
-        android:id="@+id/openDriveLinks"
-        style="@style/ButtonStyle"
-        android:text="Drive Links" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
-    <TextView
-        android:id="@+id/openSemesterResourcesPage"
-        style="@style/ButtonStyle"
-        android:text="Semester Wise Resources" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Academic Resources"
+            android:textSize="20sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
 
-    <TextView
-        android:id="@+id/batchWise"
-        style="@style/ButtonStyle"
-        android:text="Batch Wise Resources"/>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardDriveLinks"
+            style="@style/listCardStyle">
+
+            <LinearLayout
+                style="@style/listLayoutStyle"
+                >
+
+                <ImageView
+                    style="@style/listIconStyle"
+                    android:src="@drawable/ic_link"
+                    android:contentDescription="Drive Icon" />
+
+                <TextView
+                    android:id="@+id/openDriveLinks"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Important Links (Notes, Files)"
+                    android:textSize="18sp"
+                    android:textColor="@color/black" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSemesterResourcesPage"
+            style="@style/listCardStyle">
+
+            <LinearLayout
+                style="@style/listLayoutStyle">
+
+                <ImageView
+                    style="@style/listIconStyle"
+                    android:src="@drawable/ic_semester"
+                    android:contentDescription="Folder Icon" />
+
+                <TextView
+                    android:id="@+id/openSemesterResourcesPage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Semester Wise Resources"
+                    android:textSize="18sp"
+                    android:textColor="@color/black" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBatchWise"
+            style="@style/listCardStyle">
+
+            <LinearLayout
+                style="@style/listLayoutStyle">
+
+                <ImageView
+                    style="@style/listIconStyle"
+                    android:src="@drawable/ic_batch"
+                    android:contentDescription="Group Icon" />
+
+                <TextView
+                    android:id="@+id/batchWise"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Batch Wise Resources"
+                    android:textSize="18sp"
+                    android:textColor="@color/black" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Other Links"
+            android:textSize="20sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBusPage"
+            style="@style/listCardStyle">
+
+            <LinearLayout
+                style="@style/listLayoutStyle">
+
+                <ImageView
+                    style="@style/listIconStyle"
+                    android:src="@drawable/ic_bus"
+                    android:contentDescription="Bus Icon" />
+
+                <TextView
+                    android:id="@+id/openBusPage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bus Schedule"
+                    android:textSize="18sp"
+                    android:textColor="@color/black" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
 
-    <TextView
-        android:id="@+id/openBusPage"
-        style="@style/ButtonStyle"
-        android:text="Bus Schedule"/>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardFacebookPage"
+            style="@style/listCardStyle">
 
-    <TextView
-        android:id="@+id/openFacebookPage"
-        style="@style/ButtonStyle"
-        android:text="CCE Club Facebook Page"/>
+            <LinearLayout
+                style="@style/listLayoutStyle">
 
-    <TextView
-        android:id="@+id/openFacebookFemPage"
-        style="@style/ButtonStyle"
-        android:text="CCE Club Female Chapter Facebook Page" />
+                <ImageView
+                    style="@style/listIconStyle"
+                    android:src="@drawable/ic_fb"
+                    android:contentDescription="Facebook Icon" />
+
+                <TextView
+                    android:id="@+id/openFacebookPage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CCE Club Facebook"
+                    android:textSize="18sp"
+                    android:textColor="@color/black" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
 
-</LinearLayout>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardFacebookFemPage"
+            style="@style/listCardStyle">
+
+            <LinearLayout
+                style="@style/listLayoutStyle">
+
+                <ImageView
+                    style="@style/listIconStyle"
+                    android:src="@drawable/ic_fb"
+                    android:contentDescription="Facebook Female Icon" />
+
+                <TextView
+                    android:id="@+id/openFacebookFemPage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CCE Club Female Chapter Facebook"
+                    android:textSize="18sp"
+                    android:textColor="@color/black" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

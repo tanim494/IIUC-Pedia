@@ -88,9 +88,9 @@ public class UploadFile extends Fragment {
     private void setupThank() {
         UserData user = UserData.getInstance();
         String name = user.getName();
-        String id = user.getId();
+        String studentId = user.getStudentId();
 
-        String message = "Thank you, " + name + " (ID: " + id + ")" +
+        String message = "Thank you, " + name + " (ID: " + studentId + ")" +
                 " for your valuable contribution to CCE Pedia. 🙏";
 
         SpannableString spannable = new SpannableString(message);
@@ -102,8 +102,8 @@ public class UploadFile extends Fragment {
         spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.orange)), startName, endName, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         // Make ID bold
-        int startID = message.indexOf(id);
-        int endID = startID + id.length();
+        int startID = message.indexOf(studentId);
+        int endID = startID + studentId.length();
         spannable.setSpan(new StyleSpan(Typeface.BOLD), startID, endID, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         thankText.setText(spannable);

@@ -1,137 +1,87 @@
 package com.tanim.ccepedia;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
-
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.tanim.ccepedia.FacultyModel;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Faculty extends Fragment {
 
-    private ListView facultyListView;
-    private ArrayList<FacultyModel> facultyList = new ArrayList<>();
+    private static final String TAG = "FacultyFragment";
+
+    private RecyclerView facultyRecyclerView; // Changed from ListView
     private FacultyAdapter facultyAdapter;
+    private List<FacultyModel> facultyList;
     private ProgressBar loadingSpinner;
-    private Handler mainHandler = new Handler(Looper.getMainLooper());
+    private TextView errorText;
+    private FirebaseFirestore db;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_faculty, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_faculty, container, false);
 
-        facultyListView = rootView.findViewById(R.id.facultyListView);
-        loadingSpinner = rootView.findViewById(R.id.loadingSpinner);
-        facultyAdapter = new FacultyAdapter(requireContext(), facultyList);
-        facultyListView.setAdapter(facultyAdapter);
+        // This line now looks for a RecyclerView with the correct ID
+        facultyRecyclerView = view.findViewById(R.id.facultyRecyclerView);
+        loadingSpinner = view.findViewById(R.id.loadingSpinner);
+        errorText = view.findViewById(R.id.errorText);
 
-        fetchFacultyFromWeb();
+        db = FirebaseFirestore.getInstance();
+        facultyList = new ArrayList<>();
 
-        facultyListView.setOnItemClickListener((parent, view, position, id) -> {
-            FacultyModel selected = facultyList.get(position);
-            dialPhoneNumber(selected.getPhone());
-            Toast.makeText(requireContext(), "Calling " + selected.getName() + " Sir", Toast.LENGTH_SHORT).show();
-        });
+        // RecyclerView needs a LayoutManager
+        facultyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        facultyAdapter = new FacultyAdapter(getContext(), facultyList);
+        // This line now correctly sets the adapter for a RecyclerView
+        facultyRecyclerView.setAdapter(facultyAdapter);
 
-        return rootView;
+        loadFacultyData();
+
+        return view;
     }
 
-    private void fetchFacultyFromWeb() {
+    private void loadFacultyData() {
         loadingSpinner.setVisibility(View.VISIBLE);
-        new Thread(() -> {
-            try {
-                String url = "https://www.iiuc.ac.bd/cce/faculty";
-                Document doc = Jsoup.connect(url)
-                        .userAgent("Mozilla/5.0")
-                        .timeout(10000)
-                        .get();
+        errorText.setVisibility(View.GONE);
 
-                Elements headings = doc.select("div.heading_s1 h2");
-                ArrayList<FacultyModel> tempList = new ArrayList<>();
-
-                for (Element heading : headings) {
-                    String title = heading.text().trim();
-
-                    // Skip unwanted sections
-                    if (title.equalsIgnoreCase("Administrative and General Staff") ||
-                            title.equalsIgnoreCase("Chairman & Co-ordinator")) {
-                        continue;
-                    }
-
-                    Element current = heading.parent().parent().nextElementSibling();
-                    while (current != null && current.select("h2").isEmpty()) {
-                        Elements tables = current.select("table.table-striped");
-
-                        for (Element table : tables) {
-                            Element img = table.selectFirst("img");
-                            String imageUrl = (img != null) ? img.attr("src") : "";
-                            if (!imageUrl.startsWith("http") && !imageUrl.isEmpty()) {
-                                imageUrl = "https://www.iiuc.ac.bd" + imageUrl;
-                            }
-
-                            Element facultyInfo = table.selectFirst("td:nth-child(2)");
-
-                            String name = getTextSafe(facultyInfo, "strong");
-                            String designation = getSiblingTextSafe(facultyInfo, "i.fa-check-circle");
-                            String mobile = extractValue(facultyInfo.html(), "Mobile:");
-
-                            FacultyModel faculty = new FacultyModel(name, designation, mobile, imageUrl);
-                            tempList.add(faculty);
-                        }
-                        current = current.nextElementSibling();
-                    }
-                }
-
-                // Update UI on main thread
-                mainHandler.post(() -> {
+        db.collection("faculties")
+                .orderBy("order")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     loadingSpinner.setVisibility(View.GONE);
-                    facultyList.clear();
-                    facultyList.addAll(tempList);
-                    facultyAdapter.notifyDataSetChanged();
+                    if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                        facultyList.clear();
+                        for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                            try {
+                                FacultyModel faculty = doc.toObject(FacultyModel.class);
+                                facultyList.add(faculty);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Failed to parse faculty document: " + doc.getId(), e);
+                            }
+                        }
+                        facultyAdapter.notifyDataSetChanged();
+                    } else {
+                        errorText.setText("No faculty data available.");
+                        errorText.setVisibility(View.VISIBLE);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    loadingSpinner.setVisibility(View.GONE);
+                    errorText.setText("Failed to load faculty data. Please check your internet connection.");
+                    errorText.setVisibility(View.VISIBLE);
+                    Log.e(TAG, "Error loading faculty data", e);
                 });
-
-            } catch (Exception e) {
-                loadingSpinner.setVisibility(View.GONE);
-                mainHandler.post(() -> Toast.makeText(requireContext(),
-                        "Failed to load faculty data: " + e.getMessage(), Toast.LENGTH_LONG).show());
-            }
-        }).start();
-    }
-
-    private void dialPhoneNumber(String phoneNumber) {
-        Intent intent = new Intent(Intent.ACTION_DIAL);
-        intent.setData(Uri.parse("tel:" + phoneNumber));
-        startActivity(intent);
-    }
-
-    private String getTextSafe(Element parent, String selector) {
-        Element el = parent.selectFirst(selector);
-        return el != null ? el.text().trim() : "";
-    }
-
-    private String getSiblingTextSafe(Element parent, String selector) {
-        Element el = parent.selectFirst(selector);
-        return (el != null && el.nextSibling() != null) ? el.nextSibling().toString().trim() : "";
-    }
-
-    private String extractValue(String html, String keyword) {
-        int index = html.indexOf(keyword);
-        if (index == -1) return "";
-        int start = index + keyword.length();
-        int end = html.indexOf("<", start);
-        return html.substring(start, end).replaceAll("&nbsp;", "").trim();
     }
 }

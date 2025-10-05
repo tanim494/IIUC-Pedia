@@ -1,90 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fitsSystemWindows="true"
+    >
 
-    <!-- Custom AppBar -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/customToolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
-        android:layout_alignParentTop="true"
-        android:background="?android:colorPrimary"
-        android:elevation="4dp"
-        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:titleTextColor="#FFFFFF">
+    <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/customHeader"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:background="@color/white"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:elevation="2dp">
 
-        <!-- Menu Icon -->
-        <ImageView
-            android:id="@+id/menuIcon"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:clickable="true"
-            android:contentDescription="Menu Icon"
-            android:focusable="true"
-            android:src="@drawable/nv_menu"
-            app:tint="@color/white" />
+    <ImageView
+        android:id="@+id/profileImage"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:tint="@color/Green"
+        android:src="@drawable/ic_profile"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:contentDescription="User Profile" />
+
+    <LinearLayout
+        android:id="@+id/profileTextContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp"
+        app:layout_constraintStart_toEndOf="@id/profileImage"
+        app:layout_constraintTop_toTopOf="@id/profileImage"
+        app:layout_constraintBottom_toBottomOf="@id/profileImage"
+        >
 
         <TextView
-            android:id="@+id/toolText"
+            android:id="@+id/userNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:fontFamily="@font/teko_medium"
-            android:letterSpacing="0.13"
-            android:text="CCE Pedia"
-            android:textColor="@color/white"
-            android:textSize="28sp" />
+            android:text="User Name"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/switchTheme"
+        <TextView
+            android:id="@+id/userId"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:elevation="5dp"
-            android:backgroundTint="?colorSecondary"
-            android:layout_margin="5dp"
-            android:text="Theme"
-            android:textColor="@color/white"
-            />
-
-    </androidx.appcompat.widget.Toolbar>
-
-    <!-- Container in the Middle -->
-    <FrameLayout
-        android:id="@+id/Midcontainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white"
-        android:layout_above="@id/bottomNavigation"
-        android:layout_below="@id/customToolbar">
-    </FrameLayout>
-
-    <!-- Side Menu -->
-    <LinearLayout
-        android:id="@+id/sideMenu"
-        android:layout_width="300dp"
-        android:layout_height="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_below="@id/customToolbar"
-        android:visibility="gone"
-        android:orientation="vertical">
-
-        <include layout="@layout/menu_drawer" />
+            android:text="E221013"
+            android:textSize="14sp"
+            android:textColor="#757575" />
     </LinearLayout>
 
-    <!-- Bottom Navigation Bar -->
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?colorPrimary"
-        app:itemIconTint="@color/nav_item_color"
-        app:itemTextColor="@color/nav_item_color"
-        android:elevation="4dp"
         android:layout_alignParentBottom="true"
-        app:menu="@menu/bottom_navigation" />
+        android:background="@color/white"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        app:itemIconTint="@color/nav_icon_selector"
+        app:itemTextColor="@color/nav_icon_selector"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_navigation"
+        android:elevation="8dp" />
+
+    <FrameLayout
+        android:id="@+id/Midcontainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/customHeader"
+        android:layout_above="@id/bottomNavigation"
+        android:background="@color/backgroundColor" />
 
 </RelativeLayout>

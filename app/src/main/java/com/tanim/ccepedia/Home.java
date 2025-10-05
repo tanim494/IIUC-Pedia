@@ -3,146 +3,469 @@ package com.tanim.ccepedia;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.TypedValue;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ImageView; // Added for QuickActionsAdapter
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class Home extends Fragment {
 
-    FirebaseFirestore db;
+    private static final String TAG = "HomeFragment";
+
+    private FirebaseFirestore db;
+
+    // RecyclerViews
+    private RecyclerView noticesRecyclerView;
+    private RecyclerView quickActionsRecyclerView;
+    private RecyclerView latestUpdatesRecyclerView;
+
+    // Adapters
+    private NoticeAdapter noticeAdapter;
+    private QuickActionsAdapter quickActionsAdapter;
+    private LatestUpdatesAdapter latestUpdatesAdapter;
+    private MaterialCardView chatBotBtn, communityBtn;
+
+    // UI elements for Admin/Moderator
+    private Button adminBtn, uploadBtn;
+    private LinearLayout controlLayout;
+
+    private final List<String> latestUpdatesList = new ArrayList<>();
+    private final List<Notice> noticesList = new ArrayList<>();
 
     @Override
-    public ScrollView onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        // 1. Initialize ALL views
+        controlLayout = view.findViewById(R.id.controlLayout);
+        adminBtn = view.findViewById(R.id.adminBtn);
+        uploadBtn = view.findViewById(R.id.uploadBtn);
+        chatBotBtn = view.findViewById(R.id.card_chatbot);
+        communityBtn = view.findViewById(R.id.card_community);
+
+        noticesRecyclerView = view.findViewById(R.id.noticesRecyclerView);
+        quickActionsRecyclerView = view.findViewById(R.id.quickActionsRecyclerView);
+        latestUpdatesRecyclerView = view.findViewById(R.id.latestUpdatesRecyclerView); // Changed from latestUploadsRecyclerView
+
         db = FirebaseFirestore.getInstance();
 
-        // Root ScrollView with requireContext()
-        ScrollView scrollView = new ScrollView(requireContext());
-        scrollView.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        ));
+        // 2. Setup RecyclerViews
+        setupNotices();
+        setupQuickActions();
+        setupLatestUpdates();
 
-        // Vertical LinearLayout inside ScrollView
-        LinearLayout mainLayout = new LinearLayout(requireContext());
-        mainLayout.setOrientation(LinearLayout.VERTICAL);
-        int paddingPx = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
-        mainLayout.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
-        scrollView.addView(mainLayout);
+        setupInteractiveTools();
 
-        // Load Notices
+        // 3. Load Data
+        loadAllNotices();
+        loadLatestUploads();
+
+        // 4. Set User Data and Role-based visibility
+        setUserData();
+
+        return view;
+    }
+
+    private void setupInteractiveTools() {
+        chatBotBtn.setOnClickListener(v -> openChatBot());
+        communityBtn.setOnClickListener(v -> openCommunity());
+    }
+
+    private void setupNotices() {
+        noticesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        PagerSnapHelper snapHelper = new PagerSnapHelper();
+        snapHelper.attachToRecyclerView(noticesRecyclerView);
+        noticeAdapter = new NoticeAdapter(noticesList, this::handleNoticeClick);
+        noticesRecyclerView.setAdapter(noticeAdapter);
+    }
+
+    private void setupLatestUpdates() {
+        latestUpdatesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        latestUpdatesAdapter = new LatestUpdatesAdapter(latestUpdatesList);
+        latestUpdatesRecyclerView.setAdapter(latestUpdatesAdapter);
+    }
+
+    private void loadAllNotices() {
         db.collection("notices")
-                //.orderBy("timestamp", Query.Direction.DESCENDING) // Optional sorting if needed
+                // Removed: .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!isAdded()) return;  // Ensure fragment still attached
-
-                    if (queryDocumentSnapshots.isEmpty()) {
-                        TextView noNotice = createNoticeTextView("No notices at the moment.");
-                        mainLayout.addView(noNotice);
-                    } else {
+                    noticesList.clear();
+                    if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                        // Fetches documents in default Firestore order (no timestamp sorting)
                         for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                            String noticeText = doc.getString("text");
+                            String text = doc.getString("text");
                             String link = doc.getString("link");
 
-                            if (noticeText != null && !noticeText.isEmpty()) {
-                                TextView noticeView = createNoticeTextView("🔔 Notice: " + noticeText);
-
-                                if (link != null && !link.isEmpty()) {
-                                    noticeView.setClickable(true);
-                                    noticeView.setOnClickListener(v -> {
-                                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                                        intent.setData(Uri.parse(link));
-                                        startActivity(intent);
-                                    });
-                                }
-                                mainLayout.addView(noticeView);
+                            if (text != null && !text.isEmpty()) {
+                                noticesList.add(new Notice(text, link));
                             }
                         }
                     }
+
+                    if (noticesList.isEmpty()) {
+                        noticesList.add(new Notice("No announcements at the moment.", null));
+                    }
+
+                    noticeAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
-                    if (!isAdded()) return;
-                    TextView errorNotice = createNoticeTextView("Failed to load notices.");
-                    mainLayout.addView(errorNotice);
+                    Log.e(TAG, "Error loading announcements", e);
+                    noticesList.clear();
+                    noticesList.add(new Notice("Failed to load announcements.", null));
+                    noticeAdapter.notifyDataSetChanged();
                 });
+    }
 
-        // Load Messages
+    private void loadLatestUploads() {
         db.collection("messages")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!isAdded()) return;
-
-                    if (!queryDocumentSnapshots.isEmpty()) {
+                    if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                        latestUpdatesList.clear();
                         for (DocumentSnapshot doc : queryDocumentSnapshots) {
                             String msg = doc.getString("text");
-                            if (msg != null && !msg.isEmpty()) {
-                                TextView msgView = createMessageTextView("🗨 Tanim: " + msg);
-                                mainLayout.addView(msgView);
+                            if (msg != null) {
+                                latestUpdatesList.add(msg);
                             }
                         }
+                        latestUpdatesAdapter.notifyDataSetChanged();
                     } else {
-                        TextView noMsg = createMessageTextView("No messages at the moment.");
-                        mainLayout.addView(noMsg);
+                        latestUpdatesList.clear();
+                        latestUpdatesList.add("No latest updates at the moment.");
+                        latestUpdatesAdapter.notifyDataSetChanged();
                     }
                 })
                 .addOnFailureListener(e -> {
-                    if (!isAdded()) return;
-                    TextView errorView = createMessageTextView("Failed to load messages.");
-                    mainLayout.addView(errorView);
+                    Log.e(TAG, "Error loading updates", e);
+                    latestUpdatesList.clear();
+                    latestUpdatesList.add("Failed to load updates.");
+                    latestUpdatesAdapter.notifyDataSetChanged();
                 });
-
-        return scrollView;
     }
 
-    // Helper method to create styled notice TextView
-    private TextView createNoticeTextView(String text) {
-        TextView noticeView = new TextView(requireContext());
-        noticeView.setText(text);
-        noticeView.setTextSize(16);
-        noticeView.setTypeface(null, android.graphics.Typeface.BOLD);
-        noticeView.setBackgroundResource(R.drawable.buttonbg); // your notice background drawable
-        int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
-        noticeView.setPadding(padding, padding, padding, padding);
+    private void setUserData() {
+        String userRole = UserData.getInstance().getRole();
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        params.setMargins(0, 0, 0, padding); // bottom margin for spacing
-        noticeView.setLayoutParams(params);
+        if (userRole != null && userRole.equalsIgnoreCase("admin")) {
+            controlLayout.setVisibility(View.VISIBLE);
+            adminBtn.setVisibility(View.VISIBLE);
+            adminBtn.setOnClickListener(v -> openAdminMode());
 
-        // Optional elevation for shadow effect (API 21+)
-        noticeView.setElevation(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics()));
-
-        return noticeView;
+            uploadBtn.setVisibility(View.VISIBLE);
+            uploadBtn.setOnClickListener(v -> openFileUpload());
+        } else if (userRole != null && userRole.equalsIgnoreCase("moderator")) {
+            controlLayout.setVisibility(View.VISIBLE);
+            uploadBtn.setVisibility(View.VISIBLE);
+            uploadBtn.setOnClickListener(v -> openFileUpload());
+        }
     }
 
-    // Helper method to create styled message TextView
-    private TextView createMessageTextView(String text) {
-        TextView msgView = new TextView(requireContext());
-        msgView.setText(text);
-        msgView.setTextSize(16);
-        msgView.setTextColor(getResources().getColor(android.R.color.white));
-        msgView.setBackgroundResource(R.drawable.textbg);
-        int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
-        msgView.setPadding(padding, padding, padding, padding);
-
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        params.setMargins(0, 0, 0, padding / 2);
-        msgView.setLayoutParams(params);
-
-        return msgView;
+    private void handleNoticeClick(String link) {
+        if (link != null && !link.isEmpty()) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(link));
+            startActivity(intent);
+        } else {
+            Toast.makeText(getContext(), "No external link available for this notice.", Toast.LENGTH_SHORT).show();
+        }
     }
+
+    private void setupQuickActions() {
+        List<QuickActionItem> quickActionList = new ArrayList<>();
+
+        // Populate Quick Actions list (ensure R.drawable resources exist)
+        quickActionList.add(new QuickActionItem(UserData.getInstance().getSemester() + " Semester", R.drawable.ic_pdf, QuickActionItem.ACTION_RESOURCES));
+        quickActionList.add(new QuickActionItem("Bus Schedule", R.drawable.ic_bus, QuickActionItem.ACTION_BUS_SCHEDULE));
+        quickActionList.add(new QuickActionItem("CP in Java", R.drawable.ic_java, QuickActionItem.ACTION_JAVACP));
+        quickActionList.add(new QuickActionItem("Java Resources", R.drawable.ic_java, QuickActionItem.ACTION_JAVARes));
+        quickActionList.add(new QuickActionItem("IIUC Website", R.drawable.ic_web, QuickActionItem.ACTION_IIUCWeb));
+        quickActionList.add(new QuickActionItem("IIUC Repository", R.drawable.ic_repository, QuickActionItem.ACTION_IIUCRepo));
+        quickActionList.add(new QuickActionItem("Scholarship News", R.drawable.ic_scholarship, QuickActionItem.ACTION_SCHONews));
+
+
+        quickActionsAdapter = new QuickActionsAdapter(quickActionList, this::handleQuickActionClick);
+        quickActionsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        quickActionsRecyclerView.setAdapter(quickActionsAdapter);
+    }
+
+    private void handleQuickActionClick(int actionType, String actionTitle) {
+        String currentSemester = UserData.getInstance().getSemester();
+
+        switch (actionType) {
+            case QuickActionItem.ACTION_RESOURCES:
+                String semesterId = "semester_" + currentSemester;
+                openCourseListFragment(semesterId);
+                break;
+
+            case QuickActionItem.ACTION_BUS_SCHEDULE:
+                openBusSchedule();
+                break;
+
+            case QuickActionItem.ACTION_JAVACP:
+                openWebPage("https://github.com/tanim494/CodeForces");
+                break;
+
+            case QuickActionItem.ACTION_JAVARes:
+                openWebPage("https://github.com/tanim494/Java-Sessional-Resources");
+                break;
+
+            case QuickActionItem.ACTION_IIUCWeb:
+            openWebPage("https://www.iiuc.ac.bd/");
+                break;
+
+            case QuickActionItem.ACTION_IIUCRepo:
+            openWebPage("https://dspace.iiuc.ac.bd/home");
+                break;
+
+            case QuickActionItem.ACTION_SCHONews:
+                openWebPage("https://www.scholars4dev.com/");
+                break;
+
+            default:
+                Log.w(TAG, "Unhandled quick action type: " + actionType);
+        }
+    }
+
+    private void openCourseListFragment(String semesterId) {
+        CourseListFragment fragment = CourseListFragment.newInstance(semesterId);
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.Midcontainer, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void openBusSchedule() {
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.Midcontainer, new BusScheduleFragment());
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    private void openAdminMode() {
+        if (getParentFragmentManager() != null) {
+            AdminFragment adminFragment = new AdminFragment();
+            getParentFragmentManager().beginTransaction()
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                    .replace(R.id.Midcontainer, adminFragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
+    private void openFileUpload() {
+        if (getParentFragmentManager() != null) {
+            UploadFile uploadFragment = new UploadFile();
+            getParentFragmentManager().beginTransaction()
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                    .replace(R.id.Midcontainer, uploadFragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
+    private void openCommunity() {
+        Intent intent = new Intent(requireContext(), CommunityActivity.class);
+        requireActivity().startActivity(intent);
+    }
+
+    private void openChatBot() {
+        Intent intent = new Intent(requireContext(), AIChatActivity.class);
+        requireActivity().startActivity(intent);
+    }
+
+    private void openWebPage(String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(intent);
+    }
+
+
+    public static class Notice {
+        public final String text;
+        public final String link;
+
+        public Notice(String text, String link) {
+            this.text = text;
+            this.link = link;
+        }
+    }
+
+    public static class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.ViewHolder> {
+
+        private final List<Notice> items;
+        private final NoticeClickListener listener;
+
+        public interface NoticeClickListener {
+            void onNoticeClick(String link);
+        }
+
+        public NoticeAdapter(List<Notice> items, NoticeClickListener listener) {
+            this.items = items;
+            this.listener = listener;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_notice, parent, false);
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            Notice item = items.get(position);
+            holder.noticeText.setText(item.text);
+
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onNoticeClick(item.link);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return items.size();
+        }
+
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+            final TextView noticeText;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                noticeText = itemView.findViewById(R.id.noticeContentTextView);
+            }
+        }
+    }
+
+    public static class QuickActionItem {
+        public static final int ACTION_RESOURCES = 1;
+        public static final int ACTION_BUS_SCHEDULE = 2;
+        public static final int ACTION_JAVACP = 3;
+        public static final int ACTION_JAVARes = 4;
+        public static final int ACTION_IIUCWeb = 5;
+        public static final int ACTION_IIUCRepo = 6;
+        public static final int ACTION_SCHONews = 7;
+
+
+        public final String title;
+        public final int iconResId;
+        public final int actionType;
+
+        public QuickActionItem(String title, int iconResId, int actionType) {
+            this.title = title;
+            this.iconResId = iconResId;
+            this.actionType = actionType;
+        }
+    }
+
+    public static class QuickActionsAdapter extends RecyclerView.Adapter<QuickActionsAdapter.ViewHolder> {
+
+        private final List<QuickActionItem> items;
+        private final QuickActionClickListener listener;
+
+        public interface QuickActionClickListener {
+            void onQuickActionClick(int actionType, String actionTitle);
+        }
+
+        public QuickActionsAdapter(List<QuickActionItem> items, QuickActionClickListener listener) {
+            this.items = items;
+            this.listener = listener;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_quick_action, parent, false);
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            QuickActionItem item = items.get(position);
+            holder.actionText.setText(item.title);
+            holder.actionIcon.setImageResource(item.iconResId);
+
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onQuickActionClick(item.actionType, item.title);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return items.size();
+        }
+
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+            final TextView actionText;
+            final ImageView actionIcon;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                actionText = itemView.findViewById(R.id.actionText);
+                actionIcon = itemView.findViewById(R.id.actionIcon);
+            }
+        }
+    }
+
+    public static class LatestUpdatesAdapter extends RecyclerView.Adapter<LatestUpdatesAdapter.ViewHolder> {
+        private final List<String> data;
+
+        public LatestUpdatesAdapter(List<String> data) {
+            this.data = data;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_latest_update, parent, false);
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            holder.textView.setText(data.get(position));
+        }
+
+        @Override
+        public int getItemCount() {
+            return data.size();
+        }
+
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+            public final TextView textView;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                textView = itemView.findViewById(R.id.update_text);
+            }
+        }
+    }
+
 }
