@@ -16,6 +16,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.SetOptions;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -27,16 +31,16 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton, resetPasswordButton;
     private TextView registerTextView, forgotPasswordTextView;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
-        // Bind the UI elements
         emailField = findViewById(R.id.emailField);
         passwordField = findViewById(R.id.passwordField);
 
@@ -48,38 +52,52 @@ public class LoginActivity extends AppCompatActivity {
         registerTextView = findViewById(R.id.registerTextView);
         forgotPasswordTextView = findViewById(R.id.forgotPasswordTextView);
 
-        // Login Button Click Listener
         loginButton.setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();
             String password = passwordText.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
+                showAlert("Please enter both email and password");
             } else {
                 loginUser(email, password);
             }
         });
 
-        // Register Link Click Listener
         registerTextView.setOnClickListener(v -> goToRegister());
 
-        // Forgot Password Link Click Listener (Used to toggle between Login/Reset views)
         forgotPasswordTextView.setOnClickListener(v -> toggleLoginView());
 
-        // Reset Password Button Click Listener
         resetPasswordButton.setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();
             if (email.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Please enter your email", Toast.LENGTH_SHORT).show();
+                showAlert("Please enter your email");
             } else {
                 resetPassword(email);
             }
         });
     }
 
+    private void updateLastLoggedIn() {
+        if (mAuth.getCurrentUser() == null) {
+            return;
+        }
+
+        String uid = mAuth.getCurrentUser().getUid();
+
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("lastLoggedIn", FieldValue.serverTimestamp());
+
+        db.collection("users")
+                .document(uid)
+                .set(updateData, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                })
+                .addOnFailureListener(e -> {
+                });
+    }
+
     private void handleUserDocument(DocumentSnapshot snapshot) {
         if (snapshot.exists()) {
-            // Populate Singleton with user data
             UserData user = UserData.getInstance();
             user.setStudentId(snapshot.getString("id"));
             user.setName(snapshot.getString("name"));
@@ -94,6 +112,8 @@ public class LoginActivity extends AppCompatActivity {
             } else {
                 user.setRole(role);
             }
+
+            updateLastLoggedIn();
 
             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
             startActivity(intent);
@@ -112,13 +132,10 @@ public class LoginActivity extends AppCompatActivity {
                             if (user.isEmailVerified()) {
                                 String uid = user.getUid();
 
-                                // Update "verified" field to true
-                                FirebaseFirestore db = FirebaseFirestore.getInstance();
                                 db.collection("users")
                                         .document(uid)
                                         .update("verified", true)
                                         .addOnSuccessListener(aVoid -> {
-                                            // fetch user data
                                             db.collection("users")
                                                     .document(uid)
                                                     .get()
@@ -130,7 +147,6 @@ public class LoginActivity extends AppCompatActivity {
                                                 Toast.makeText(LoginActivity.this, "Failed to update verification status", Toast.LENGTH_SHORT).show());
 
                             } else {
-                                // Resend email verification
                                 user.sendEmailVerification()
                                         .addOnSuccessListener(aVoid ->
                                                 showAlert("Email not verified. A verification email has been sent."))
@@ -152,9 +168,6 @@ public class LoginActivity extends AppCompatActivity {
                 .show();
     }
 
-    /**
-     * Toggles the UI between the standard Login view and the Reset Password view.
-     */
     private void toggleLoginView() {
         if (resetPasswordButton.getVisibility() == View.VISIBLE) {
             showLoginView();
@@ -167,7 +180,6 @@ public class LoginActivity extends AppCompatActivity {
         resetPasswordButton.setVisibility(View.GONE);
         loginButton.setVisibility(View.VISIBLE);
 
-        // Show TextInputLayouts for both fields
         emailField.setVisibility(View.VISIBLE);
         passwordField.setVisibility(View.VISIBLE);
 
@@ -176,48 +188,37 @@ public class LoginActivity extends AppCompatActivity {
         forgotPasswordTextView.setText("Forgot Password?");
     }
 
-    // Show Reset Password UI
     private void showResetPasswordView() {
-        // HIDE the Password input field and Login button
         passwordField.setVisibility(View.GONE);
         loginButton.setVisibility(View.GONE);
 
-        // Show reset password button
         resetPasswordButton.setVisibility(View.VISIBLE);
 
-        // Hide register link
         registerTextView.setVisibility(View.GONE);
 
-        // FIX: Ensure email field is VISIBLE for password reset email entry
         emailField.setVisibility(View.VISIBLE);
 
         forgotPasswordTextView.setText("Go to Login");
     }
 
-    // Reset Password Functionality
     private void resetPassword(String email) {
         if (email.isEmpty()) {
-            Toast.makeText(LoginActivity.this, "Please enter your email", Toast.LENGTH_SHORT).show();
+            showAlert("Please enter your email");
             return;
         }
 
-        // FIX: Replaced the faulty fetchSignInMethodsForEmail check with a direct call
         mAuth.sendPasswordResetEmail(email)
                 .addOnCompleteListener(resetTask -> {
                     if (resetTask.isSuccessful()) {
-                        // Use a generic success message as Firebase may succeed even if the email doesn't exist (security practice)
-                        Toast.makeText(LoginActivity.this, "If this email is registered, a password reset link has been sent.", Toast.LENGTH_LONG).show();
+                        showAlert("If this email is registered, a password reset link has been sent.");
 
-                        // Switch back to login view after sending reset email
                         showLoginView();
                     } else {
-                        // This block handles general failure (network, invalid format, etc.)
-                        Toast.makeText(LoginActivity.this, "Failed to send reset email. Please check the email address.", Toast.LENGTH_LONG).show();
+                        showAlert("Failed to send reset email. Please check the email address.");
                     }
                 });
     }
 
-    // Go to Register Activity
     private void goToRegister() {
         Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
         startActivity(intent);

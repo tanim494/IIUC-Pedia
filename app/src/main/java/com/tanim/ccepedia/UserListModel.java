@@ -1,43 +1,50 @@
 package com.tanim.ccepedia;
 
+import java.util.Date;
+
 public class UserListModel {
     private String name;
-    private String id;
-    private String semester;
-    private String gender;
+    private String studentId;
     private String email;
+    private String gender;
     private String phone;
+    private String semester;
     private String role;
     private boolean verified;
+    private Date lastLoggedIn;
 
-    public UserListModel() { }
+    public UserListModel() {
+    }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-
-    public String getSemester() { return semester; }
-    public void setSemester(String semester) { this.semester = semester; }
-
-    public String getGender() { return gender; }
-    public void setGender(String gender) { this.gender = gender; }
+    public String getStudentId() { return studentId; }
+    public void setStudentId(String studentId) { this.studentId = studentId; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+
+    public String getSemester() { return semester; }
+    public void setSemester(String semester) { this.semester = semester; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    public boolean isVerified() {
-        return verified;
+    public boolean isVerified() { return verified; }
+    public void setVerified(boolean verified) { this.verified = verified; }
+
+    public Date getLastLoggedIn() {
+        return lastLoggedIn;
     }
 
-    public void setVerified(boolean verified) {
-        this.verified = verified;
+    public void setLastLoggedIn(Date lastLoggedIn) {
+        this.lastLoggedIn = lastLoggedIn;
     }
 }

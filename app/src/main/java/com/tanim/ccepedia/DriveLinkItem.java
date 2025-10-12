@@ -5,18 +5,13 @@ public class DriveLinkItem {
     private String title;
     private String url;
 
-    // ✅ Required by Firestore: no-argument constructor
     public DriveLinkItem() {
-        // Needed for Firebase Firestore to deserialize documents
     }
 
-    // Optional: Constructor for creating new objects manually
     public DriveLinkItem(String title, String url) {
         this.title = title;
         this.url = url;
     }
-
-    // Getters and Setters
 
     public String getId() {
         return id;

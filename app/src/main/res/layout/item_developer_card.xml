@@ -12,7 +12,6 @@
         android:layout_height="250dp">
         <androidx.cardview.widget.CardView
             app:cardCornerRadius="15dp"
-            android:layout_marginTop="40dp"
             app:cardElevation="10dp"
             app:cardUseCompatPadding="true"
             card_view:cardCornerRAdius="5dp"

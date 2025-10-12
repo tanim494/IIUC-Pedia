@@ -132,8 +132,6 @@ public class ManageMessagesNoticesFragment extends Fragment {
         });
     }
 
-    // Notice dialogs and CRUD
-
     private void showAddNoticeDialog() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_edit_notice, null);
         EditText etText = dialogView.findViewById(R.id.etNoticeText);
@@ -209,8 +207,6 @@ public class ManageMessagesNoticesFragment extends Fragment {
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to delete notice: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    // Message dialogs and CRUD
-
     private void showAddMessageDialog() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_edit_message, null);
         EditText etText = dialogView.findViewById(R.id.etMessageText);
@@ -283,7 +279,6 @@ public class ManageMessagesNoticesFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Clean up Firestore listeners
         if (noticesListener != null) {
             noticesListener.remove();
         }

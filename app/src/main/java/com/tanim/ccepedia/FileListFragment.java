@@ -4,11 +4,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,8 +33,9 @@ public class FileListFragment extends Fragment {
 
     private FirebaseFirestore db;
     private RecyclerView recyclerView;
-    private List<FileItem> fileList = new ArrayList<>();
     private FileAdapter adapter;
+    private ProgressBar loadingSpinner;
+    private SearchView searchView;
 
     public static FileListFragment newInstance(String semesterId, String courseId) {
         FileListFragment fragment = new FileListFragment();
@@ -59,14 +62,21 @@ public class FileListFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_file_list, container, false);
+
         recyclerView = view.findViewById(R.id.fileRecyclerView);
+        loadingSpinner = view.findViewById(R.id.loadingSpinner);
+        searchView = view.findViewById(R.id.searchViewFiles);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new FileAdapter(fileList, new FileAdapter.OnItemClickListener() {
+        adapter = new FileAdapter(new ArrayList<>(), new FileAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(FileItem item) {
-                // Open PDF viewer fragment
-                PdfViewerFragment fragment = PdfViewerFragment.newInstance(item.getUrl(), item.getFileName());
+                if (item.getUploaderStudentId() != null) {
+                    ViewTracker.incrementUserViewCount(item.getUploaderStudentId());
+                }
+
+                PdfViewerFragment fragment = PdfViewerFragment.newInstance(item.getUrl(), item.getFileName(), item.getUploaderStudentId());
                 getParentFragmentManager()
                         .beginTransaction()
                         .replace(R.id.Midcontainer, fragment)
@@ -76,7 +86,6 @@ public class FileListFragment extends Fragment {
 
             @Override
             public void onDeleteClick(FileItem item) {
-                // Confirm delete
                 new AlertDialog.Builder(requireContext())
                         .setTitle("Delete File")
                         .setMessage("Are you sure you want to delete \"" + item.getFileName() + "\"?")
@@ -88,11 +97,29 @@ public class FileListFragment extends Fragment {
 
         recyclerView.setAdapter(adapter);
 
+        setupSearch();
         fetchFiles();
         return view;
     }
 
+    private void setupSearch() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                adapter.filterList(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.filterList(newText);
+                return true;
+            }
+        });
+    }
+
     private void fetchFiles() {
+        loadingSpinner.setVisibility(View.VISIBLE);
         db.collection("semesters")
                 .document(semesterId)
                 .collection("courses")
@@ -100,34 +127,41 @@ public class FileListFragment extends Fragment {
                 .collection("files")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    loadingSpinner.setVisibility(View.GONE);
                     if (queryDocumentSnapshots.isEmpty()) {
                         Toast.makeText(requireContext(), "No files found", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    fileList.clear();
+                    List<FileItem> fetchedList = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         String id = doc.getId();
                         String fileName = doc.getString("fileName");
                         String url = doc.getString("url");
                         String uploader = doc.getString("uploadedBy");
+                        String uploaderStudentId = doc.getString("uploaderStudentId");
 
-                        fileList.add(new FileItem(id, fileName, url, uploader));
+                        FileItem item = new FileItem(id, fileName, url, uploader);
+                        item.setUploaderStudentId(uploaderStudentId);
+                        fetchedList.add(item);
                     }
 
-                    adapter.notifyDataSetChanged();
+                    adapter.updateData(fetchedList);
                 })
-                .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to load files: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    loadingSpinner.setVisibility(View.GONE);
+                    Toast.makeText(requireContext(), "Failed to load files: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void deleteFile(FileItem item) {
-        // Construct Storage path based on your structure; adjust if necessary
+        Toast.makeText(requireContext(), "Deleting file...", Toast.LENGTH_SHORT).show();
+
         StorageReference fileRef = FirebaseStorage.getInstance().getReference()
                 .child(semesterId + "/" + courseId + "/" + item.getFileName());
 
         fileRef.delete()
                 .addOnSuccessListener(aVoid -> {
-                    // Now delete Firestore document
                     db.collection("semesters")
                             .document(semesterId)
                             .collection("courses")
@@ -137,8 +171,7 @@ public class FileListFragment extends Fragment {
                             .delete()
                             .addOnSuccessListener(aVoid1 -> {
                                 Toast.makeText(requireContext(), "File deleted successfully", Toast.LENGTH_SHORT).show();
-                                fileList.remove(item);
-                                adapter.notifyDataSetChanged();
+                                fetchFiles();
                             })
                             .addOnFailureListener(e ->
                                     Toast.makeText(requireContext(), "Failed to delete metadata: " + e.getMessage(), Toast.LENGTH_SHORT).show());

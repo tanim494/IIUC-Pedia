@@ -77,7 +77,6 @@ public class ADMBusFragment extends Fragment {
                 .addOnSuccessListener(aVoid ->
                         Toast.makeText(getContext(), "Bus schedule updated.", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> {
-                    // If doc doesn't exist, create it
                     busScheduleDocRef.set(new ManageBusSchedule(title, url))
                             .addOnSuccessListener(aVoid ->
                                     Toast.makeText(getContext(), "Bus schedule saved.", Toast.LENGTH_SHORT).show())

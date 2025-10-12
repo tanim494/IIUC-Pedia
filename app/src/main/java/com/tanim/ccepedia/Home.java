@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ImageView; // Added for QuickActionsAdapter
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,7 +25,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,18 +36,14 @@ public class Home extends Fragment {
 
     private FirebaseFirestore db;
 
-    // RecyclerViews
     private RecyclerView noticesRecyclerView;
     private RecyclerView quickActionsRecyclerView;
     private RecyclerView latestUpdatesRecyclerView;
 
-    // Adapters
     private NoticeAdapter noticeAdapter;
-    private QuickActionsAdapter quickActionsAdapter;
     private LatestUpdatesAdapter latestUpdatesAdapter;
     private MaterialCardView chatBotBtn, communityBtn;
 
-    // UI elements for Admin/Moderator
     private Button adminBtn, uploadBtn;
     private LinearLayout controlLayout;
 
@@ -59,7 +54,6 @@ public class Home extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        // 1. Initialize ALL views
         controlLayout = view.findViewById(R.id.controlLayout);
         adminBtn = view.findViewById(R.id.adminBtn);
         uploadBtn = view.findViewById(R.id.uploadBtn);
@@ -68,22 +62,19 @@ public class Home extends Fragment {
 
         noticesRecyclerView = view.findViewById(R.id.noticesRecyclerView);
         quickActionsRecyclerView = view.findViewById(R.id.quickActionsRecyclerView);
-        latestUpdatesRecyclerView = view.findViewById(R.id.latestUpdatesRecyclerView); // Changed from latestUploadsRecyclerView
+        latestUpdatesRecyclerView = view.findViewById(R.id.latestUpdatesRecyclerView);
 
         db = FirebaseFirestore.getInstance();
 
-        // 2. Setup RecyclerViews
         setupNotices();
         setupQuickActions();
         setupLatestUpdates();
 
         setupInteractiveTools();
 
-        // 3. Load Data
         loadAllNotices();
-        loadLatestUploads();
+        loadLatestUpdates();
 
-        // 4. Set User Data and Role-based visibility
         setUserData();
 
         return view;
@@ -110,12 +101,10 @@ public class Home extends Fragment {
 
     private void loadAllNotices() {
         db.collection("notices")
-                // Removed: .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     noticesList.clear();
                     if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
-                        // Fetches documents in default Firestore order (no timestamp sorting)
                         for (DocumentSnapshot doc : queryDocumentSnapshots) {
                             String text = doc.getString("text");
                             String link = doc.getString("link");
@@ -140,7 +129,7 @@ public class Home extends Fragment {
                 });
     }
 
-    private void loadLatestUploads() {
+    private void loadLatestUpdates() {
         db.collection("messages")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -197,17 +186,14 @@ public class Home extends Fragment {
     private void setupQuickActions() {
         List<QuickActionItem> quickActionList = new ArrayList<>();
 
-        // Populate Quick Actions list (ensure R.drawable resources exist)
         quickActionList.add(new QuickActionItem(UserData.getInstance().getSemester() + " Semester", R.drawable.ic_pdf, QuickActionItem.ACTION_RESOURCES));
         quickActionList.add(new QuickActionItem("Bus Schedule", R.drawable.ic_bus, QuickActionItem.ACTION_BUS_SCHEDULE));
         quickActionList.add(new QuickActionItem("CP in Java", R.drawable.ic_java, QuickActionItem.ACTION_JAVACP));
         quickActionList.add(new QuickActionItem("Java Resources", R.drawable.ic_java, QuickActionItem.ACTION_JAVARes));
         quickActionList.add(new QuickActionItem("IIUC Website", R.drawable.ic_web, QuickActionItem.ACTION_IIUCWeb));
         quickActionList.add(new QuickActionItem("IIUC Repository", R.drawable.ic_repository, QuickActionItem.ACTION_IIUCRepo));
-        quickActionList.add(new QuickActionItem("Scholarship News", R.drawable.ic_scholarship, QuickActionItem.ACTION_SCHONews));
 
-
-        quickActionsAdapter = new QuickActionsAdapter(quickActionList, this::handleQuickActionClick);
+        QuickActionsAdapter quickActionsAdapter = new QuickActionsAdapter(quickActionList, this::handleQuickActionClick);
         quickActionsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         quickActionsRecyclerView.setAdapter(quickActionsAdapter);
     }
@@ -241,10 +227,6 @@ public class Home extends Fragment {
             openWebPage("https://dspace.iiuc.ac.bd/home");
                 break;
 
-            case QuickActionItem.ACTION_SCHONews:
-                openWebPage("https://www.scholars4dev.com/");
-                break;
-
             default:
                 Log.w(TAG, "Unhandled quick action type: " + actionType);
         }
@@ -267,25 +249,21 @@ public class Home extends Fragment {
     }
 
     private void openAdminMode() {
-        if (getParentFragmentManager() != null) {
-            AdminFragment adminFragment = new AdminFragment();
-            getParentFragmentManager().beginTransaction()
-                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                    .replace(R.id.Midcontainer, adminFragment)
-                    .addToBackStack(null)
-                    .commit();
-        }
+        AdminFragment adminFragment = new AdminFragment();
+        getParentFragmentManager().beginTransaction()
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .replace(R.id.Midcontainer, adminFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void openFileUpload() {
-        if (getParentFragmentManager() != null) {
-            UploadFile uploadFragment = new UploadFile();
-            getParentFragmentManager().beginTransaction()
-                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                    .replace(R.id.Midcontainer, uploadFragment)
-                    .addToBackStack(null)
-                    .commit();
-        }
+        UploadFile uploadFragment = new UploadFile();
+        getParentFragmentManager().beginTransaction()
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .replace(R.id.Midcontainer, uploadFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void openCommunity() {
@@ -302,7 +280,6 @@ public class Home extends Fragment {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
     }
-
 
     public static class Notice {
         public final String text;
@@ -369,8 +346,6 @@ public class Home extends Fragment {
         public static final int ACTION_JAVARes = 4;
         public static final int ACTION_IIUCWeb = 5;
         public static final int ACTION_IIUCRepo = 6;
-        public static final int ACTION_SCHONews = 7;
-
 
         public final String title;
         public final int iconResId;

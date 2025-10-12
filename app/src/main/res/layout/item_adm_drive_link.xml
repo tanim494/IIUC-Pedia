@@ -14,7 +14,7 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:padding="10dp"
-        android:background="@drawable/textbg">
+        android:background="@drawable/rounded_whitebg">
 
         <TextView
             android:id="@+id/tvDriveTitle"

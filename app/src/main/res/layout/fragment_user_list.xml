@@ -5,7 +5,7 @@
     android:padding="16dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/backgroundColor"
     >
 
     <androidx.appcompat.widget.SearchView
@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:queryHint="Search by name or ID"
         android:iconifiedByDefault="false"
-        android:background="@drawable/textbg"
+        android:background="@drawable/rounded_whitebg"
         android:layout_margin="0dp"
         android:padding="0dp"
         android:layout_marginBottom="5dp" />

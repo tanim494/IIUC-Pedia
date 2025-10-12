@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/white"
-            app:title="AI Tutor"
+            app:title="CCE Pedia AI"
             app:titleTextColor="@color/Green"
             app:navigationIconTint="@color/Green"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
@@ -29,6 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/chatRecyclerView"
             android:layout_width="0dp"
@@ -61,14 +62,14 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Ask the CCE Pedia AI..."
+                android:hint="CCE Pedia AI is coming soon..."
                 android:minHeight="48dp"
                 android:paddingHorizontal="16dp"
                 android:background="@drawable/bg_rounded_input"
                 android:imeOptions="actionSend"
                 android:inputType="textCapSentences|textMultiLine"
                 android:maxLength="500"
-                />
+                android:enabled="false"   />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/sendButton"
@@ -79,7 +80,27 @@
                 app:fabSize="normal"
                 app:tint="@color/white"
                 app:backgroundTint="@color/Green"
-                android:contentDescription="Send Message"/>
+                android:contentDescription="Send Message"
+                android:enabled="false"   />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_upcoming_feature_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CCE Pedia AI is an upcoming feature.\nStay tuned for the next update!"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/darker_gray"
+            android:gravity="center"
+            android:padding="16dp"
+            android:background="@drawable/rounded_whitebg"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/chatRecyclerView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_bias="0.4"
+            android:lineSpacingExtra="4dp"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

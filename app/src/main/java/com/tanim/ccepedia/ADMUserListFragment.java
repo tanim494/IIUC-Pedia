@@ -19,11 +19,13 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class ADMUserListFragment extends Fragment {
 
-    private Spinner spinnerGender, spinnerSemester, spinnerRole, spinnerVerified;  // Add spinnerVerified
+    private Spinner spinnerGender, spinnerSemester, spinnerRole, spinnerVerified;
     private SearchView searchView;
     private RecyclerView recyclerViewUsers;
     private UserListAdapter userAdapter;
@@ -45,7 +47,7 @@ public class ADMUserListFragment extends Fragment {
         spinnerGender = view.findViewById(R.id.spinnerGender);
         spinnerSemester = view.findViewById(R.id.spinnerSemester);
         spinnerRole = view.findViewById(R.id.spinnerRole);
-        spinnerVerified = view.findViewById(R.id.spinnerVerified);  // Initialize spinnerVerified
+        spinnerVerified = view.findViewById(R.id.spinnerVerified);
         searchView = view.findViewById(R.id.searchView);
         searchView.setIconified(false);
         recyclerViewUsers = view.findViewById(R.id.recyclerViewUsers);
@@ -59,10 +61,8 @@ public class ADMUserListFragment extends Fragment {
 
         setupSpinners();
 
-        // Load all users initially
         loadUsers(null, null, null, null);
 
-        // Search listener
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -81,14 +81,12 @@ public class ADMUserListFragment extends Fragment {
     }
 
     private void setupSpinners() {
-        // Gender spinner options
         String[] genders = {"All", "male", "female"};
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, genders);
         genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerGender.setAdapter(genderAdapter);
 
-        // Semester spinner options
         String[] semesters = new String[9];
         semesters[0] = "All";
         for (int i = 1; i <= 8; i++) {
@@ -99,21 +97,18 @@ public class ADMUserListFragment extends Fragment {
         semesterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSemester.setAdapter(semesterAdapter);
 
-        // Role spinner options
         String[] roles = {"All", "admin", "moderator", "user"};
         ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, roles);
         roleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerRole.setAdapter(roleAdapter);
 
-        // Verified spinner options
         String[] verifiedOptions = {"All", "Verified", "Not Verified"};
         ArrayAdapter<String> verifiedAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, verifiedOptions);
         verifiedAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerVerified.setAdapter(verifiedAdapter);
 
-        // Listener for all filters
         AdapterView.OnItemSelectedListener filterListener = new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -127,7 +122,7 @@ public class ADMUserListFragment extends Fragment {
         spinnerGender.setOnItemSelectedListener(filterListener);
         spinnerSemester.setOnItemSelectedListener(filterListener);
         spinnerRole.setOnItemSelectedListener(filterListener);
-        spinnerVerified.setOnItemSelectedListener(filterListener);  // Add listener here
+        spinnerVerified.setOnItemSelectedListener(filterListener);
     }
 
     private void applyFiltersAndSearch() {
@@ -153,42 +148,64 @@ public class ADMUserListFragment extends Fragment {
         filterBySearch(searchView.getQuery().toString());
     }
 
-    // Added verifiedFilter param
     private void loadUsers(String genderFilter, String semesterFilter, String roleFilter, Boolean verifiedFilter) {
-        db.collection("users").get().addOnSuccessListener(queryDocumentSnapshots -> {
-            userList.clear();
-            allUsers.clear();
 
-            for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                UserListModel user = doc.toObject(UserListModel.class);
+        db.collection("users")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
 
-                boolean genderMatch = (genderFilter == null || (user.getGender() != null && user.getGender().equalsIgnoreCase(genderFilter)));
-                boolean semesterMatch = (semesterFilter == null || (user.getSemester() != null && user.getSemester().equalsIgnoreCase(semesterFilter)));
-                boolean roleMatch;
+                    List<UserListModel> fetchedUsers = new ArrayList<>();
 
-                if (roleFilter == null) {
-                    roleMatch = true;
-                } else if (roleFilter.equals("user")) {
-                    roleMatch = (user.getRole() == null || user.getRole().equalsIgnoreCase("user"));
-                } else {
-                    roleMatch = roleFilter.equalsIgnoreCase(user.getRole());
-                }
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        UserListModel user = doc.toObject(UserListModel.class);
+                        fetchedUsers.add(user);
+                    }
 
-                boolean verifiedMatch = true;
-                if (verifiedFilter != null) {
-                    // Assuming user.getVerified() returns Boolean (nullable)
-                    Boolean userVerified = user.isVerified();
-                    if (userVerified == null) userVerified = false; // treat null as not verified
-                    verifiedMatch = userVerified.equals(verifiedFilter);
-                }
+                    Collections.sort(fetchedUsers, new Comparator<UserListModel>() {
+                        @Override
+                        public int compare(UserListModel u1, UserListModel u2) {
+                            if (u1.getLastLoggedIn() == null && u2.getLastLoggedIn() == null) {
+                                return 0;
+                            }
+                            if (u1.getLastLoggedIn() == null) {
+                                return 1;
+                            }
+                            if (u2.getLastLoggedIn() == null) {
+                                return -1;
+                            }
+                            return u2.getLastLoggedIn().compareTo(u1.getLastLoggedIn());
+                        }
+                    });
 
-                if (genderMatch && semesterMatch && roleMatch && verifiedMatch) {
-                    userList.add(user);
-                    allUsers.add(user);
-                }
-            }
-            userAdapter.notifyDataSetChanged();
-        });
+                    userList.clear();
+                    allUsers.clear();
+
+                    for (UserListModel user : fetchedUsers) {
+                        boolean genderMatch = (genderFilter == null || (user.getGender() != null && user.getGender().equalsIgnoreCase(genderFilter)));
+                        boolean semesterMatch = (semesterFilter == null || (user.getSemester() != null && user.getSemester().equalsIgnoreCase(semesterFilter)));
+                        boolean roleMatch;
+
+                        if (roleFilter == null) {
+                            roleMatch = true;
+                        } else if (roleFilter.equals("user")) {
+                            roleMatch = (user.getRole() == null || user.getRole().isBlank() || user.getRole().equalsIgnoreCase("user"));
+                        } else {
+                            roleMatch = roleFilter.equalsIgnoreCase(user.getRole());
+                        }
+
+                        boolean verifiedMatch = true;
+                        if (verifiedFilter != null) {
+                            Boolean userVerified = user.isVerified();
+                            verifiedMatch = userVerified.equals(verifiedFilter);
+                        }
+
+                        if (genderMatch && semesterMatch && roleMatch && verifiedMatch) {
+                            userList.add(user);
+                            allUsers.add(user);
+                        }
+                    }
+                    userAdapter.notifyDataSetChanged();
+                });
     }
 
     private void filterBySearch(String query) {
@@ -197,7 +214,7 @@ public class ADMUserListFragment extends Fragment {
 
         for (UserListModel user : allUsers) {
             if ((user.getName() != null && user.getName().toLowerCase().contains(query)) ||
-                    (user.getId() != null && user.getId().toLowerCase().contains(query))) {
+                    (user.getStudentId() != null && user.getStudentId().toLowerCase().contains(query))) {
                 filteredList.add(user);
             }
         }

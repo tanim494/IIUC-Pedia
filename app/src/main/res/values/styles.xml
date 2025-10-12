@@ -1,5 +1,4 @@
 <resources>
-    <!-- Dialog animation styles -->
     <style name="DialogSlideAnim" parent="Theme.CCEPedia">
         <item name="android:windowAnimationStyle">@style/DialogSlideAnimStyle</item>
     </style>

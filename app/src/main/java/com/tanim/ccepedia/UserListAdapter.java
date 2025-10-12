@@ -13,16 +13,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserViewHolder> {
 
-    private List<UserListModel> users;
-    private Context context;
+    private final Context context;
+    private final List<UserListModel> userList;
 
-    public UserListAdapter(Context context, List<UserListModel> users) {
+    public UserListAdapter(Context context, List<UserListModel> userList) {
         this.context = context;
-        this.users = users;
+        this.userList = userList;
     }
 
     @NonNull
@@ -34,23 +37,36 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
 
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        UserListModel user = users.get(position);
+        UserListModel user = userList.get(position);
+
         holder.tvName.setText(user.getName());
-        holder.tvStudentId.setText(user.getId());
-        holder.tvSemester.setText(user.getSemester());
-        holder.tvGender.setText(user.getGender());
-        holder.tvRole.setText(user.getRole() == null ? "User" : user.getRole());
+        holder.tvStudentId.setText("ID: " + user.getStudentId());
+        holder.tvEmail.setText(user.getEmail());
+        holder.tvPhone.setText(user.getPhone());
+        holder.tvSemester.setText("Semester: " + user.getSemester());
+        holder.tvGender.setText("Gender: " + (user.getGender() != null ? user.getGender() : "N/A"));
 
-        holder.tvEmail.setText(user.getEmail() != null ? user.getEmail() : "No Email");
-        holder.tvPhone.setText(user.getPhone() != null ? user.getPhone() : "No Phone");
+        String role = user.getRole();
+        if (role == null || role.isEmpty()) {
+            role = "user";
+        }
+        holder.tvRole.setText("Role: " + role.toUpperCase(Locale.ROOT));
 
-        // Handle Verified Status
         if (user.isVerified()) {
             holder.tvUserVerified.setText("Verified");
-            holder.tvUserVerified.setTextColor(ContextCompat.getColor(context, R.color.Green));
+            holder.tvUserVerified.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark));
         } else {
             holder.tvUserVerified.setText("Non Verified");
-            holder.tvUserVerified.setTextColor(ContextCompat.getColor(context, R.color.Red));
+            holder.tvUserVerified.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark));
+        }
+
+        Date lastLoggedIn = user.getLastLoggedIn();
+        if (lastLoggedIn != null) {
+            SimpleDateFormat formatter = new SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault());
+            String formattedDate = formatter.format(lastLoggedIn);
+            holder.tvLastLoggedIn.setText("Last Seen: " + formattedDate);
+        } else {
+            holder.tvLastLoggedIn.setText("Last Seen: Unavailable");
         }
 
         holder.itemView.setOnClickListener(v -> {
@@ -60,7 +76,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
 
     @Override
     public int getItemCount() {
-        return users.size();
+        return userList.size();
     }
 
     private void showRoleChangeDialog(UserListModel user) {
@@ -68,15 +84,19 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Change Role for " + user.getName());
+
         builder.setSingleChoiceItems(roles, getRolePosition(user.getRole(), roles), (dialog, which) -> {
+
             String selectedRole = roles[which].equals("user") ? null : roles[which];
+
             FirebaseFirestore.getInstance()
                     .collection("users")
-                    .whereEqualTo("studentid", user.getId())
+                    .whereEqualTo("id", user.getStudentId())
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         if (!queryDocumentSnapshots.isEmpty()) {
                             String docId = queryDocumentSnapshots.getDocuments().get(0).getId();
+
                             FirebaseFirestore.getInstance()
                                     .collection("users")
                                     .document(docId)
@@ -84,8 +104,13 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
                                     .addOnSuccessListener(unused -> {
                                         user.setRole(selectedRole);
                                         notifyDataSetChanged();
+                                    })
+                                    .addOnFailureListener(e -> {
                                     });
+                        } else {
                         }
+                    })
+                    .addOnFailureListener(e -> {
                     });
             dialog.dismiss();
         });
@@ -94,27 +119,27 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
     }
 
     private int getRolePosition(String role, String[] roles) {
-        if (role == null) return 2; // user
+        if (role == null) return 2;
         for (int i = 0; i < roles.length; i++) {
             if (roles[i].equalsIgnoreCase(role)) return i;
         }
         return 2;
     }
 
-    static class UserViewHolder extends RecyclerView.ViewHolder {
-
-        TextView tvName, tvStudentId, tvSemester, tvGender, tvRole, tvEmail, tvPhone, tvUserVerified;
+    public static class UserViewHolder extends RecyclerView.ViewHolder {
+        TextView tvName, tvStudentId, tvEmail, tvPhone, tvSemester, tvGender, tvRole, tvUserVerified, tvLastLoggedIn;
 
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
             tvStudentId = itemView.findViewById(R.id.tvStudentId);
+            tvEmail = itemView.findViewById(R.id.tvEmail);
+            tvPhone = itemView.findViewById(R.id.tvPhone);
             tvSemester = itemView.findViewById(R.id.tvSemester);
             tvGender = itemView.findViewById(R.id.tvGender);
             tvRole = itemView.findViewById(R.id.tvRole);
-            tvEmail = itemView.findViewById(R.id.tvEmail);
-            tvPhone = itemView.findViewById(R.id.tvPhone);
             tvUserVerified = itemView.findViewById(R.id.tvUserVerified);
+            tvLastLoggedIn = itemView.findViewById(R.id.tvLastLoggedIn);
         }
     }
 }

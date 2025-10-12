@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.tanim.ccepedia.FacultyModel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class Faculty extends Fragment {
 
     private static final String TAG = "FacultyFragment";
 
-    private RecyclerView facultyRecyclerView; // Changed from ListView
+    private RecyclerView facultyRecyclerView;
     private FacultyAdapter facultyAdapter;
     private List<FacultyModel> facultyList;
     private ProgressBar loadingSpinner;
@@ -33,7 +32,6 @@ public class Faculty extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_faculty, container, false);
 
-        // This line now looks for a RecyclerView with the correct ID
         facultyRecyclerView = view.findViewById(R.id.facultyRecyclerView);
         loadingSpinner = view.findViewById(R.id.loadingSpinner);
         errorText = view.findViewById(R.id.errorText);
@@ -41,10 +39,8 @@ public class Faculty extends Fragment {
         db = FirebaseFirestore.getInstance();
         facultyList = new ArrayList<>();
 
-        // RecyclerView needs a LayoutManager
         facultyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         facultyAdapter = new FacultyAdapter(getContext(), facultyList);
-        // This line now correctly sets the adapter for a RecyclerView
         facultyRecyclerView.setAdapter(facultyAdapter);
 
         loadFacultyData();

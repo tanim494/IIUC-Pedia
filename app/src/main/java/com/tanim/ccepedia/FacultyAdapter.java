@@ -13,7 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import com.tanim.ccepedia.FacultyModel;
+
 import java.util.List;
 
 public class FacultyAdapter extends RecyclerView.Adapter<FacultyAdapter.FacultyViewHolder> {
@@ -29,7 +29,6 @@ public class FacultyAdapter extends RecyclerView.Adapter<FacultyAdapter.FacultyV
     @NonNull
     @Override
     public FacultyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Correctly inflates the item_faculty.xml file
         View view = LayoutInflater.from(context).inflate(R.layout.faculty_item, parent, false);
         return new FacultyViewHolder(view);
     }
@@ -53,6 +52,7 @@ public class FacultyAdapter extends RecyclerView.Adapter<FacultyAdapter.FacultyV
 
         holder.itemView.setOnClickListener(v -> {
             if (faculty.getPhone() != null && !faculty.getPhone().isEmpty()) {
+                Toast.makeText(context,"Calling " + faculty.getName() + " Sir", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 intent.setData(Uri.parse("tel:" + faculty.getPhone()));
                 context.startActivity(intent);
@@ -75,7 +75,6 @@ public class FacultyAdapter extends RecyclerView.Adapter<FacultyAdapter.FacultyV
 
         public FacultyViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Correct IDs to match the item_faculty.xml file
             facultyPhoto = itemView.findViewById(R.id.facultyPhoto);
             facultyName = itemView.findViewById(R.id.facultyName);
             facultyDesignation = itemView.findViewById(R.id.facultyDesignation);

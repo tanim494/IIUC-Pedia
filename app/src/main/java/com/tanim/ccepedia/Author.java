@@ -22,21 +22,18 @@ public class Author extends Fragment {
         TextView appVersion = view.findViewById(R.id.appVersionText);
         appVersion.setText("App Version " + BuildConfig.VERSION_NAME);
 
-        // GitHub Button
         LinearLayout githubButton = view.findViewById(R.id.githubButton);
         githubButton.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/tanim494"));
             startActivity(intent);
         });
 
-        // Facebook Button
         LinearLayout facebookButton = view.findViewById(R.id.facebookButton);
         facebookButton.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://m.facebook.com/tanim494"));
             startActivity(intent);
         });
 
-        //LinkedIn Button
         LinearLayout websiteButton = view.findViewById(R.id.linkedinButton);
         websiteButton.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.linkedin.com/in/tanim494/"));
@@ -52,15 +49,14 @@ public class Author extends Fragment {
         LinearLayout authorMail = view.findViewById(R.id.authorMail);
         authorMail.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.setType("message/rfc822"); // Set the MIME type for email
+            intent.setType("message/rfc822");
 
-            intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"Tanim494@gmail.com"}); // Replace with the recipient's email address
-            intent.putExtra(Intent.EXTRA_SUBJECT, "Request Feature or Suggestion for CCE Pedia"); // Set the email subject
+            intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"Tanim494@gmail.com"});
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Request Feature or Suggestion for CCE Pedia");
 
             try {
                 startActivity(Intent.createChooser(intent, "Send Email"));
             } catch (ActivityNotFoundException e) {
-                // Handle the case where no email client is installed on the device
                 Toast.makeText(getActivity(), "No email app installed", Toast.LENGTH_SHORT).show();
             }
         });

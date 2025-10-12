@@ -1,77 +1,75 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/backgroundColor"
+    tools:context=".BusScheduleFragment">
 
-    <FrameLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
-        <!-- Main content in a LinearLayout -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <!-- Existing Views -->
-
-            <TextView
-                android:id="@+id/scheduleTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:paddingBottom="8dp" />
+            android:orientation="vertical">
 
             <ImageView
                 android:id="@+id/scheduleImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
                 android:contentDescription="Bus Schedule Image"
-                android:scaleType="fitCenter"/>
+                />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/downloadButton"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Download Schedule"
-                android:layout_marginTop="12dp"
-                android:textColor="@android:color/white"
-                android:backgroundTint="@color/orange"
+                android:text="Download Schedule Image"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="16dp"
+                android:paddingVertical="12dp"
+                app:cornerRadius="8dp"
+                android:backgroundTint="@color/Green"
                 android:textAllCaps="false" />
+
+            <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Important Contacts:"
+                android:text="Important Contacts"
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="18sp"
-                android:layout_marginTop="15dp"/>
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"/>
 
-            <ScrollView
+            <LinearLayout
+                android:id="@+id/contactsLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fillViewport="true">
-
-                <LinearLayout
-                    android:id="@+id/contactsLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="8dp" />
-            </ScrollView>
+                android:orientation="vertical"
+                android:paddingTop="8dp" /> </LinearLayout>
 
         </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-        <!-- ProgressBar overlay -->
-        <ProgressBar
-            android:id="@+id/loadingSpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="24dp"
-            android:visibility="gone" />
-    </FrameLayout>
-</ScrollView>
+    <ProgressBar
+        android:id="@+id/loadingSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

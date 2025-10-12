@@ -10,7 +10,6 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Notices Section -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddNotice"
             android:layout_width="match_parent"
@@ -29,7 +28,6 @@
             android:clipToPadding="false"
             android:paddingBottom="8dp" />
 
-        <!-- Messages Section -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddMessage"
             android:layout_width="match_parent"

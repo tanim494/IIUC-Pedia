@@ -10,17 +10,15 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import android.widget.AutoCompleteTextView; // Import for the new Spinner replacement
+import android.widget.AutoCompleteTextView;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private TextInputEditText nameEditText, idEditText, phoneEditText, emailEditText, passwordEditText;
-    // Changed Spinner to AutoCompleteTextView
     private AutoCompleteTextView genderAutoComplete, semesterAutoComplete;
     private Button registerButton;
     private FirebaseAuth mAuth;
@@ -31,26 +29,20 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // Initialize Firebase Auth and Firestore
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // Initialize Views
-        // Using TextInputEditText instead of plain EditText for consistency
         nameEditText = findViewById(R.id.nameEditText);
         idEditText = findViewById(R.id.idEditText);
         phoneEditText = findViewById(R.id.phoneEditText);
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
 
-        // Correctly initialize AutoCompleteTextViews
-        genderAutoComplete = findViewById(R.id.genderSpinner); // Re-use the same ID
-        semesterAutoComplete = findViewById(R.id.semesterSpinner); // Re-use the same ID
+        genderAutoComplete = findViewById(R.id.genderSpinner);
+        semesterAutoComplete = findViewById(R.id.semesterSpinner);
 
         registerButton = findViewById(R.id.registerButton);
 
-        // Populate Semester Dropdown
-        // Using a list of strings
         String[] semesters = new String[9];
         semesters[0] = "Select Semester";
         for (int i = 1; i <= 8; i++) {
@@ -59,13 +51,10 @@ public class RegisterActivity extends AppCompatActivity {
         ArrayAdapter<String> semesterAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, semesters);
         semesterAutoComplete.setAdapter(semesterAdapter);
 
-        // Populate Gender Dropdown
         String[] genders = {"Select Gender", "Male", "Female"};
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, genders);
         genderAutoComplete.setAdapter(genderAdapter);
 
-
-        // Register Button Click Listener
         registerButton.setOnClickListener(v -> registerUser());
     }
 
@@ -76,10 +65,8 @@ public class RegisterActivity extends AppCompatActivity {
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
-        // --- MODIFICATION HERE: Get text directly from AutoCompleteTextView ---
         String gender = genderAutoComplete.getText().toString();
         String semester = semesterAutoComplete.getText().toString();
-        // ---------------------------------------------------------------------
 
         if (name.isEmpty() || id.isEmpty() || email.isEmpty() || password.isEmpty()) {
             showAlert("Please fill in all fields");
@@ -162,8 +149,6 @@ public class RegisterActivity extends AppCompatActivity {
                 .show();
     }
 
-
-    // User class to represent the user data (remains unchanged)
     public static class User {
         private String name;
         private String id;
@@ -174,7 +159,6 @@ public class RegisterActivity extends AppCompatActivity {
         private boolean verified;
 
         public User() {
-            // Default constructor required for Firestore
         }
 
         public User(String name, String id, String phone, String email, String gender, String semester) {

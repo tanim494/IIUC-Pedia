@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -48,7 +46,7 @@
                     android:layout_marginTop="2dp"/>
             </LinearLayout>
 
-            <include layout="@layout/item_image"/>
+            <include layout="@layout/item_developer_card"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -60,9 +58,9 @@
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="16dp"/>
 
-            <include layout="@layout/item_add"/>
+            <include layout="@layout/item_developer_address"/>
 
-            <include layout="@layout/item_email"/>
+            <include layout="@layout/item_developer_email"/>
 
             <TextView
                 android:id="@+id/appVersionText"

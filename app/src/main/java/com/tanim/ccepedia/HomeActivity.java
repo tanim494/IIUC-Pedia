@@ -9,16 +9,18 @@ import android.os.Handler;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import androidx.activity.OnBackPressedCallback;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import com.google.firebase.firestore.DocumentReference;
@@ -33,7 +35,6 @@ public class HomeActivity extends AppCompatActivity {
     private TextView userId;
     private ImageView profileImage;
 
-
     String updateLink;
     float databaseVersion;
     float userVersion;
@@ -47,7 +48,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Important: Use the new layout
         setContentView(R.layout.activity_home);
 
         checkForUpdate();
@@ -58,6 +58,38 @@ public class HomeActivity extends AppCompatActivity {
         setupDatabaseListeners();
         setupClickListeners();
         loadFragment();
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.Midcontainer);
+
+                if (currentFragment instanceof Home || (getSupportFragmentManager().getBackStackEntryCount() == 0 && currentFragment == null)) {
+
+                    new MaterialAlertDialogBuilder(HomeActivity.this)
+                            .setTitle("Exit CCEPedia?")
+                            .setMessage("Are you sure you want to close the application?")
+                            .setPositiveButton("Yes", (dialog, which) -> finish())
+                            .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                            .show();
+
+                }
+                else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
+                }
+                else {
+                    bottomNavigation.setSelectedItemId(R.id.nv_home);
+
+                    FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+                    tran.setCustomAnimations(android.R.anim.fade_in,
+                            android.R.anim.fade_out,
+                            android.R.anim.fade_in,
+                            android.R.anim.fade_out);
+                    tran.replace(R.id.Midcontainer, new Home());
+                    tran.commit();
+                }
+            }
+        });
     }
 
     private void checkForUpdate() {
@@ -83,7 +115,6 @@ public class HomeActivity extends AppCompatActivity {
 
 
     private void initializeViews() {
-        // Initialize new header views
         userNameTextView = findViewById(R.id.userNameTextView);
         userId = findViewById(R.id.userId);
         profileImage = findViewById(R.id.profileImage);
@@ -132,7 +163,10 @@ public class HomeActivity extends AppCompatActivity {
 
         ProfileFragment profileFragment = new ProfileFragment();
         getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out,
+                        android.R.anim.fade_in,
+                        android.R.anim.fade_out)
                 .replace(R.id.Midcontainer, profileFragment)
                 .addToBackStack(null)
                 .commit();
@@ -142,21 +176,21 @@ public class HomeActivity extends AppCompatActivity {
     private void loadFragment() {
         FragmentManager fgMan = getSupportFragmentManager();
         FragmentTransaction tran = fgMan.beginTransaction();
-        tran.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+        tran.setCustomAnimations(android.R.anim.fade_in,
+                android.R.anim.fade_out,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out);
         tran.replace(R.id.Midcontainer, new Home());
         tran.commit();
-
-        // Hide the custom header when not on the Home fragment
-        fgMan.addOnBackStackChangedListener(() -> {
-            boolean isHome = fgMan.findFragmentById(R.id.Midcontainer) instanceof Home;
-            findViewById(R.id.customHeader).setVisibility(isHome ? View.VISIBLE : View.GONE);
-        });
 
 
         bottomNavigation.setOnItemSelectedListener(item -> {
 
             FragmentTransaction tran1 = getSupportFragmentManager().beginTransaction();
-            tran1.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+            tran1.setCustomAnimations(android.R.anim.fade_in,
+                    android.R.anim.fade_out,
+                    android.R.anim.fade_in,
+                    android.R.anim.fade_out);
 
             switch (item.getItemId()) {
                 case R.id.nv_home:
@@ -177,6 +211,7 @@ public class HomeActivity extends AppCompatActivity {
             return true;
         });
     }
+
 
     @Override
     protected void onDestroy() {

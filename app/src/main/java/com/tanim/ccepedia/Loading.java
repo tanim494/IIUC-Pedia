@@ -13,9 +13,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Loading extends AppCompatActivity {
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -25,6 +31,7 @@ public class Loading extends AppCompatActivity {
         setContentView(R.layout.activity_loading);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         new Handler().postDelayed(() -> {
             FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -33,10 +40,8 @@ public class Loading extends AppCompatActivity {
                 Toast.makeText(this, "Login to continue.", Toast.LENGTH_SHORT).show();
                 goToLogin();
             } else {
-                // 🔄 Reload the user to check if still valid
                 currentUser.reload()
                         .addOnSuccessListener(unused -> {
-                            // Check again in case account was deleted
                             FirebaseUser updatedUser = mAuth.getCurrentUser();
                             if (updatedUser == null) {
                                 Toast.makeText(this, "Account not found. Please login again.", Toast.LENGTH_SHORT).show();
@@ -44,10 +49,8 @@ public class Loading extends AppCompatActivity {
                                 return;
                             }
 
-                            // ✅ Proceed to check Firestore user data
                             String uid = updatedUser.getUid();
-                            FirebaseFirestore.getInstance()
-                                    .collection("users")
+                            db.collection("users")
                                     .document(uid)
                                     .get()
                                     .addOnSuccessListener(this::handleUserDocument)
@@ -62,12 +65,30 @@ public class Loading extends AppCompatActivity {
                             goToLogin();
                         });
             }
-        }, 1500);  // Delay for splash screen
+        }, 1500);
+    }
+
+    private void updateLastLoggedIn() {
+        if (mAuth.getCurrentUser() == null) {
+            return;
+        }
+
+        String uid = mAuth.getCurrentUser().getUid();
+
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("lastLoggedIn", FieldValue.serverTimestamp());
+
+        db.collection("users")
+                .document(uid)
+                .set(updateData, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                })
+                .addOnFailureListener(e -> {
+                });
     }
 
     private void handleUserDocument(DocumentSnapshot snapshot) {
         if (snapshot.exists()) {
-            // ✅ Populate singleton
             UserData user = UserData.getInstance();
             user.setStudentId(snapshot.getString("id"));
             user.setName(snapshot.getString("name"));
@@ -78,6 +99,8 @@ public class Loading extends AppCompatActivity {
 
             String role = snapshot.getString("role");
             user.setRole(role != null ? role : "");
+
+            updateLastLoggedIn();
 
             goToHome();
         } else {

@@ -23,7 +23,6 @@ public class ADMConfigFragment extends Fragment {
 
     private EditText editVersion, editUpdateLink;
     private Button btnSaveAppConfig;
-
     private FirebaseFirestore firestore;
     private DocumentReference configRef;
 

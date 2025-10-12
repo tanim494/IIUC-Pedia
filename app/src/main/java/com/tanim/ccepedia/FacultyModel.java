@@ -7,7 +7,6 @@ public class FacultyModel {
     private String photoUrl; // <-- This variable name must match the Firestore field
 
     public FacultyModel() {
-        // Needed for Firestore deserialization
     }
 
     public String getName() {
@@ -26,7 +25,6 @@ public class FacultyModel {
         return photoUrl;
     }
 
-    // Setters added for better practice
     public void setName(String name) {
         this.name = name;
     }

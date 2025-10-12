@@ -2,9 +2,9 @@ package com.tanim.ccepedia;
 
 import android.Manifest;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,9 +19,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.github.barteksc.pdfviewer.PDFView;
+import com.google.android.material.button.MaterialButton;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,18 +35,21 @@ import java.net.URL;
 public class PdfViewerFragment extends Fragment {
     private static final String ARG_URL = "fileUrl";
     private static final String ARG_FILENAME = "fileName";
+    private static final String ARG_UPLOADER_STUDENT_ID = "uploaderStudentId";
     private static final int REQUEST_WRITE_PERMISSION = 1001;
 
-    private String fileUrl, fileName;
+    private String fileUrl, fileName, uploaderStudentId;
     private PDFView pdfView;
     private ProgressBar loadingSpinner;
 
+    private Uri localPdfUri = null;
 
-    public static PdfViewerFragment newInstance(String url, String fileName) {
+    public static PdfViewerFragment newInstance(String url, String fileName, String uploaderStudentId) {
         PdfViewerFragment fragment = new PdfViewerFragment();
         Bundle args = new Bundle();
         args.putString(ARG_URL, url);
         args.putString(ARG_FILENAME, fileName);
+        args.putString(ARG_UPLOADER_STUDENT_ID, uploaderStudentId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -55,12 +60,14 @@ public class PdfViewerFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_pdf_viewer, container, false);
 
         pdfView = view.findViewById(R.id.pdfView);
-        Button downloadButton = view.findViewById(R.id.downloadButton);
+        MaterialButton downloadButton = view.findViewById(R.id.downloadButton);
+        MaterialButton shareButton = view.findViewById(R.id.shareButton);
         loadingSpinner = view.findViewById(R.id.loadingSpinner);
 
         if (getArguments() != null) {
             fileUrl = getArguments().getString(ARG_URL);
             fileName = getArguments().getString(ARG_FILENAME);
+            uploaderStudentId = getArguments().getString(ARG_UPLOADER_STUDENT_ID);
             downloadAndDisplayPdf(fileUrl);
         }
 
@@ -72,19 +79,40 @@ public class PdfViewerFragment extends Fragment {
             }
         });
 
+        shareButton.setOnClickListener(v -> {
+            if (localPdfUri != null) {
+                sharePdfFile();
+            } else {
+                Toast.makeText(requireContext(), "PDF not loaded yet. Please wait.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         return view;
     }
 
     private void downloadAndDisplayPdf(String urlString) {
         loadingSpinner.setVisibility(View.VISIBLE);
+
         new Thread(() -> {
+            File file = null;
             try {
                 URL url = new URL(urlString);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
 
                 InputStream input = connection.getInputStream();
-                File file = File.createTempFile("temp_pdf", ".pdf", requireContext().getCacheDir());
+
+                String cleanFileName = this.fileName;
+                if (cleanFileName == null || cleanFileName.trim().isEmpty()) {
+                    cleanFileName = "temp_pdf_" + System.currentTimeMillis() + ".pdf";
+                }
+                if (!cleanFileName.toLowerCase().endsWith(".pdf")) {
+                    cleanFileName += ".pdf";
+                }
+                cleanFileName = cleanFileName.replace(" ", "_").replace("/", "_");
+
+                file = new File(requireContext().getCacheDir(), cleanFileName);
+
                 FileOutputStream output = new FileOutputStream(file);
 
                 byte[] buffer = new byte[1024];
@@ -96,18 +124,42 @@ public class PdfViewerFragment extends Fragment {
                 output.close();
                 input.close();
 
-                requireActivity().runOnUiThread(() -> pdfView.fromFile(file)
+                File finalFile = file;
+                localPdfUri = FileProvider.getUriForFile(
+                        requireContext(),
+                        requireContext().getPackageName() + ".fileprovider",
+                        finalFile
+                );
+
+                requireActivity().runOnUiThread(() -> pdfView.fromFile(finalFile)
                         .enableSwipe(true)
                         .swipeHorizontal(false)
                         .enableDoubletap(true)
                         .onLoad(nbPages -> loadingSpinner.setVisibility(View.GONE))
+                        .onError(t -> {
+                            loadingSpinner.setVisibility(View.GONE);
+                            Toast.makeText(getContext(), "Failed to render PDF: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        })
                         .load());
 
             } catch (Exception e) {
-                requireActivity().runOnUiThread(() ->
-                        Toast.makeText(getContext(), "Failed to load PDF: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                requireActivity().runOnUiThread(() -> {
+                    loadingSpinner.setVisibility(View.GONE);
+                    Toast.makeText(getContext(), "Failed to load PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         }).start();
+    }
+
+    private void sharePdfFile() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("application/pdf");
+        shareIntent.putExtra(Intent.EXTRA_STREAM, localPdfUri);
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Shared Document: " + fileName);
+
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        startActivity(Intent.createChooser(shareIntent, "Share PDF file using..."));
     }
 
     private void checkPermissionAndDownload(String url) {
@@ -118,17 +170,19 @@ public class PdfViewerFragment extends Fragment {
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_WRITE_PERMISSION);
         } else {
-            new DownloadPdfTask().execute(url);
+            downloadFileToDevice(url);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if (requestCode == REQUEST_WRITE_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (fileUrl != null && !fileUrl.isEmpty()) {
-                    new DownloadPdfTask().execute(fileUrl);
+                    downloadFileToDevice(fileUrl);
                 }
             } else {
                 Toast.makeText(requireContext(), "Permission denied. Cannot download PDF.", Toast.LENGTH_SHORT).show();
@@ -136,29 +190,33 @@ public class PdfViewerFragment extends Fragment {
         }
     }
 
-    private class DownloadPdfTask extends AsyncTask<String, Void, Boolean> {
-        private String savedFilePath = null;
+    private void downloadFileToDevice(String urlToDownload) {
+        Toast.makeText(requireContext(), "Starting download...", Toast.LENGTH_SHORT).show();
 
-        @Override
-        protected Boolean doInBackground(String... urls) {
-            String urlToDownload = urls[0];
+        new Thread(() -> {
+            String savedFilePath = null;
+            boolean success = false;
             try {
                 URL url = new URL(urlToDownload);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
 
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    throw new Exception("Server returned code " + connection.getResponseCode());
+                }
+
                 InputStream input = connection.getInputStream();
 
-                String extension = ".pdf";  // PDF extension fixed
+                String extension = ".pdf";
                 String originalFileName = PdfViewerFragment.this.fileName;
                 String fileNameToSave;
 
                 if (originalFileName == null || originalFileName.trim().isEmpty()) {
                     fileNameToSave = "CCE_Pedia_" + System.currentTimeMillis() + extension;
                 } else if (!originalFileName.toLowerCase().endsWith(".pdf")) {
-                    fileNameToSave = "CCE_Pedia_" + originalFileName + extension;
+                    fileNameToSave = originalFileName.replace(" ", "_") + extension;
                 } else {
-                    fileNameToSave = "CCE_Pedia_" + originalFileName;
+                    fileNameToSave = originalFileName.replace(" ", "_");
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -170,51 +228,71 @@ public class PdfViewerFragment extends Fragment {
                     Uri uri = requireContext().getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
 
                     if (uri != null) {
-                        OutputStream output = requireContext().getContentResolver().openOutputStream(uri);
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = input.read(buffer)) != -1) {
-                            output.write(buffer, 0, bytesRead);
+                        try (OutputStream output = requireContext().getContentResolver().openOutputStream(uri)) {
+                            byte[] buffer = new byte[4096];
+                            int bytesRead;
+                            while ((bytesRead = input.read(buffer)) != -1) {
+                                output.write(buffer, 0, bytesRead);
+                            }
                         }
-                        output.close();
-                        input.close();
-                        savedFilePath = Environment.DIRECTORY_DOWNLOADS + "/CCE Pedia/Resources/" + fileNameToSave;
-                        return true;
-                    } else {
-                        return false;
+                        savedFilePath = "Downloads/CCE Pedia/Resources/" + fileNameToSave;
+                        success = true;
                     }
+
                 } else {
                     File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                     File ccePediaFolder = new File(downloadsFolder, "CCE Pedia/Resources");
                     if (!ccePediaFolder.exists()) ccePediaFolder.mkdirs();
 
                     File file = new File(ccePediaFolder, fileNameToSave);
-                    savedFilePath = file.getAbsolutePath();
 
-                    FileOutputStream output = new FileOutputStream(file);
-                    byte[] buffer = new byte[4096];
-                    int bytesRead;
-                    while ((bytesRead = input.read(buffer)) != -1) {
-                        output.write(buffer, 0, bytesRead);
+                    try (FileOutputStream output = new FileOutputStream(file)) {
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = input.read(buffer)) != -1) {
+                            output.write(buffer, 0, bytesRead);
+                        }
                     }
+                    savedFilePath = file.getAbsolutePath();
+                    success = true;
+                }
 
-                    output.close();
-                    input.close();
-                    return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                success = false;
+            } finally {
+                String finalPath = savedFilePath;
+                boolean finalSuccess = success;
+                requireActivity().runOnUiThread(() -> {
+                    if (finalSuccess) {
+                        Toast.makeText(requireContext(), "Downloaded to: " + finalPath, Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to download PDF", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).start();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if (localPdfUri != null) {
+            try {
+                File fileToDelete = null;
+                if (localPdfUri.getPathSegments().size() >= 2) {
+                    String pathSegment = localPdfUri.getPathSegments().get(1);
+                    fileToDelete = new File(requireContext().getCacheDir(), pathSegment);
+                }
+
+                if (fileToDelete != null && fileToDelete.exists() && fileToDelete.delete()) {
+                    // Cleanup successful
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                return false;
             }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            if (success) {
-                Toast.makeText(requireContext(), "Downloaded to: " + savedFilePath, Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(requireContext(), "Failed to download PDF", Toast.LENGTH_SHORT).show();
-            }
+            localPdfUri = null;
         }
     }
 }

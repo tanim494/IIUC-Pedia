@@ -50,7 +50,6 @@ public class ADMBatchLinkFragment extends Fragment {
         btnDelete = view.findViewById(R.id.btnDelete);
         listViewLinks = view.findViewById(R.id.listViewLinks);
 
-        // Setup Spinner dynamically
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
                 getContext(),
                 android.R.layout.simple_spinner_item,
@@ -183,7 +182,6 @@ public class ADMBatchLinkFragment extends Fragment {
         btnDelete.setVisibility(View.GONE);
     }
 
-    // Helper class to store batch link data
     private static class BatchLink {
         String id;
         String gender;

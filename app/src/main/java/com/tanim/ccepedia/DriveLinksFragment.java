@@ -27,9 +27,9 @@ public class DriveLinksFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_drive_links, container, false);
+        View view = inflater.inflate(R.layout.fragment_links, container, false);
 
-        recyclerView = view.findViewById(R.id.recyclerViewDriveLinks);
+        recyclerView = view.findViewById(R.id.recyclerViewLinks);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         driveLinks = new ArrayList<>();
         adapter = new DriveLinkAdapter(driveLinks);

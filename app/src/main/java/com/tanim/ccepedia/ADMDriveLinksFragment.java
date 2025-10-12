@@ -27,13 +27,10 @@ public class ADMDriveLinksFragment extends Fragment {
     private EditText editDriveTitle, editDriveUrl;
     private Button btnAddDriveLink;
     private RecyclerView rvDriveLinks;
-
     private FirebaseFirestore firestore;
     private CollectionReference driveLinksRef;
-
     private DriveLinkItemAdapter adapter;
     private List<DriveLinkItem> driveLinkList;
-
     private String editingDocId = null; // null means adding new
 
     @Nullable
@@ -132,7 +129,6 @@ public class ADMDriveLinksFragment extends Fragment {
         btnAddDriveLink.setText("Add Drive Link");
     }
 
-    // Called when a drive link item is clicked to edit
     private void onDriveLinkClicked(DriveLinkItem driveLink) {
         editingDocId = driveLink.getId();
         editDriveTitle.setText(driveLink.getTitle());
@@ -140,7 +136,6 @@ public class ADMDriveLinksFragment extends Fragment {
         btnAddDriveLink.setText("Update Link");
     }
 
-    // Called when delete icon/button is clicked in item
     private void onDriveLinkDeleteClicked(DriveLinkItem driveLink) {
         driveLinksRef.document(driveLink.getId())
                 .delete()

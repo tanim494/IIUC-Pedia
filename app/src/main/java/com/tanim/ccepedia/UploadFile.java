@@ -13,8 +13,10 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.provider.OpenableColumns;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
@@ -71,11 +73,10 @@ public class UploadFile extends Fragment {
         progressBar = view.findViewById(R.id.progressBar);
         thankText = view.findViewById(R.id.thankText);
 
-        // Initialize Firebase instances
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
 
-        btnUpload.setEnabled(false); // disable upload until file is picked
+        btnUpload.setEnabled(false);
 
         setupSemesterSpinner();
         setupFilePicker();
@@ -95,13 +96,11 @@ public class UploadFile extends Fragment {
 
         SpannableString spannable = new SpannableString(message);
 
-        // Make name bold and colored
         int startName = message.indexOf(name);
         int endName = startName + name.length();
         spannable.setSpan(new StyleSpan(Typeface.BOLD), startName, endName, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.orange)), startName, endName, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.Green)), startName, endName, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // Make ID bold
         int startID = message.indexOf(studentId);
         int endID = startID + studentId.length();
         spannable.setSpan(new StyleSpan(Typeface.BOLD), startID, endID, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -123,15 +122,15 @@ public class UploadFile extends Fragment {
                 String selectedSemester = "semester_" + semesters[position];
                 spinnerCourse.setEnabled(false);
                 spinnerCourse.setAdapter(null);
+                checkUploadReadiness();
 
-                // Fetch courses from Firestore under semesters/{semester}/courses collection
                 db.collection("semesters")
                         .document(selectedSemester)
                         .collection("courses")
                         .get()
                         .addOnSuccessListener(queryDocumentSnapshots -> {
+                            List<String> courseList = new ArrayList<>();
                             if (!queryDocumentSnapshots.isEmpty()) {
-                                List<String> courseList = new ArrayList<>();
                                 for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                                     courseList.add(doc.getId());
                                 }
@@ -141,19 +140,32 @@ public class UploadFile extends Fragment {
                                 spinnerCourse.setAdapter(courseAdapter);
                                 spinnerCourse.setEnabled(true);
                             } else {
-                                Toast.makeText(requireContext(), "No courses found for " + semesters[position], Toast.LENGTH_SHORT).show();
-                                spinnerCourse.setEnabled(false);
+                                Toast.makeText(requireContext(), "No courses found for semester " + semesters[position], Toast.LENGTH_SHORT).show();
                             }
+                            checkUploadReadiness();
                         })
                         .addOnFailureListener(e -> {
                             Toast.makeText(requireContext(), "Failed to load courses: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             spinnerCourse.setEnabled(false);
+                            checkUploadReadiness();
                         });
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 spinnerCourse.setEnabled(false);
+                checkUploadReadiness();
+            }
+        });
+
+        spinnerCourse.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                checkUploadReadiness();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                checkUploadReadiness();
             }
         });
     }
@@ -164,39 +176,38 @@ public class UploadFile extends Fragment {
                 selectedFileUri = uri;
                 String fileName = getFileName(uri);
                 etFileName.setText(fileName != null ? fileName : "");
-                btnUpload.setEnabled(true);
+                checkUploadReadiness();
+            } else {
+                selectedFileUri = null;
+                checkUploadReadiness();
             }
         });
 
-        // Restrict to PDFs only
         btnPickFile.setOnClickListener(v -> filePickerLauncher.launch("application/pdf"));
     }
 
     private void setupListeners() {
-        btnUpload.setOnClickListener(v -> {
-            if (selectedFileUri == null) {
-                Toast.makeText(requireContext(), "Please select a file first", Toast.LENGTH_SHORT).show();
-                return;
+        etFileName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                checkUploadReadiness();
             }
+        });
+
+        btnUpload.setOnClickListener(v -> {
             String fileName = etFileName.getText().toString().trim();
             if (fileName.isEmpty()) {
                 Toast.makeText(requireContext(), "Please enter a file name", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            String semester = spinnerSemester.getSelectedItem() != null ? spinnerSemester.getSelectedItem().toString() : null;
-            String course = spinnerCourse.getSelectedItem() != null ? spinnerCourse.getSelectedItem().toString() : null;
+            String semester = spinnerSemester.getSelectedItem().toString();
+            String course = spinnerCourse.getSelectedItem().toString();
 
-            if (semester == null || semester.isEmpty()) {
-                Toast.makeText(requireContext(), "Please select a semester", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (course == null || course.isEmpty()) {
-                Toast.makeText(requireContext(), "Please select a course", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Confirmation dialog
             new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                     .setTitle("Confirm Upload")
                     .setMessage("Upload file:\n" + fileName + "\nSemester: " + semester + "\nCourse: " + course + "\nProceed?")
@@ -206,15 +217,22 @@ public class UploadFile extends Fragment {
         });
     }
 
+    private void checkUploadReadiness() {
+        boolean fileSelected = selectedFileUri != null;
+        boolean fileNameValid = !etFileName.getText().toString().trim().isEmpty();
+        boolean courseSelected = spinnerCourse.getSelectedItem() != null && spinnerCourse.isEnabled();
+
+        btnUpload.setEnabled(fileSelected && fileNameValid && courseSelected);
+    }
+
     private void uploadFile(Uri fileUri, String fileName, String semester, String course) {
         progressBar.setVisibility(View.VISIBLE);
         btnUpload.setEnabled(false);
 
+        String storageFileName = fileName;
+
         StorageReference storageRef = storage.getReference();
-
-        // Path in Firebase Storage: semesters/semester_1/CourseA/filename.ext
-        String filePath = semester + "/" + course + "/" + fileName;
-
+        String filePath = semester + "/" + course + "/" + storageFileName;
         StorageReference fileRef = storageRef.child(filePath);
 
         fileRef.putFile(fileUri)
@@ -236,9 +254,16 @@ public class UploadFile extends Fragment {
         fileData.put("url", downloadUrl);
         fileData.put("uploadedAt", System.currentTimeMillis());
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        UserData user = UserData.getInstance();
         if (user != null) {
-            fileData.put("uploadedBy", user.getEmail());
+            String uploaderNameId = user.getName() + " (ID: " + user.getStudentId() + ")";
+            fileData.put("uploadedBy", uploaderNameId);
+            fileData.put("uploaderStudentId", user.getStudentId());
+        } else {
+            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (firebaseUser != null) {
+                fileData.put("uploadedBy", firebaseUser.getEmail());
+            }
         }
 
         db.collection("semesters")
@@ -250,9 +275,9 @@ public class UploadFile extends Fragment {
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(requireContext(), "File uploaded successfully", Toast.LENGTH_SHORT).show();
                     progressBar.setVisibility(View.GONE);
-                    btnUpload.setEnabled(true);
                     etFileName.setText("");
                     selectedFileUri = null;
+                    checkUploadReadiness();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(requireContext(), "Failed to save file metadata: " + e.getMessage(), Toast.LENGTH_SHORT).show();

@@ -23,7 +23,6 @@ public class AdminFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_admin, container, false);
 
-        // Initialize buttons
         btnUserList = view.findViewById(R.id.btnUserList);
         btnBatchLinks = view.findViewById(R.id.btnBatchLinks);
         btnDriveLinks = view.findViewById(R.id.btnDriveLinks);
@@ -31,7 +30,6 @@ public class AdminFragment extends Fragment {
         btnBusSchedule = view.findViewById(R.id.btnBusSchedule);
         btnAppConfig = view.findViewById(R.id.btnAppConfig);
 
-        // Button click listeners
         btnUserList.setOnClickListener(v -> replaceFragment(new ADMUserListFragment()));
         btnBatchLinks.setOnClickListener(v -> replaceFragment(new ADMBatchLinkFragment()));
         btnDriveLinks.setOnClickListener(v -> replaceFragment(new ADMDriveLinksFragment()));

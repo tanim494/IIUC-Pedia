@@ -67,6 +67,7 @@
             android:layout_marginTop="16dp"
             android:hint="Student ID"
             android:importantForAutofill="no"
+            android:autofillHints="username"
             android:textColorHint="@color/black"
             app:startIconDrawable="@drawable/ic_id"
             app:boxStrokeColor="@color/Green"
@@ -81,14 +82,17 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/idEditText"
-                android:inputType="text"
+                android:inputType="textNoSuggestions"
                 android:textSize="16sp"
                 android:textColor="#212121"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:background="@null"/>
+                android:background="@null"
+                android:importantForAutofill="no"
+                android:autofillHints="username"
+                />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -99,6 +103,7 @@
             android:layout_marginTop="16dp"
             android:hint="Phone Number"
             android:textColorHint="@color/black"
+            android:autofillHints="phone"
             app:startIconDrawable="@drawable/ic_phone"
             app:boxStrokeColor="@color/Green"
             app:boxBackgroundColor="@android:color/white"
@@ -119,7 +124,8 @@
                 android:layout_height="56dp"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:background="@null"/>
+                android:background="@null"
+                android:autofillHints="phone"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -190,6 +196,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:autofillHints="emailAddress"
             android:hint="Email"
             android:textColorHint="@color/black"
             app:startIconDrawable="@drawable/ic_email"
@@ -212,7 +219,8 @@
                 android:layout_height="56dp"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:background="@null"/>
+                android:background="@null"
+                android:autofillHints="emailAddress"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -244,7 +252,8 @@
                 android:layout_height="56dp"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:background="@null"/>
+                android:background="@null"
+                android:autofillHints="password"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton

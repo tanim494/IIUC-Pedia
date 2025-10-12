@@ -9,8 +9,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ArrayAdapter;     // For creating the list of semesters
-import android.widget.AutoCompleteTextView; // For the semester dropdown component
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 
 import androidx.fragment.app.Fragment;
 
@@ -20,7 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileFragment extends Fragment {
 
-    private TextView nameText, idText, emailText, phoneText, semesterText;
+    private TextView nameText, idText, emailText, phoneText, semesterText, viewCountText;
     private TextInputLayout nameInputLayout, idInputLayout, phoneInputLayout, semesterInputLayout;
     private EditText nameEdit, idEdit, phoneEdit;
     private AutoCompleteTextView semesterEdit;
@@ -34,12 +34,12 @@ public class ProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        // Initialize views
         nameText = view.findViewById(R.id.nameText);
         idText = view.findViewById(R.id.idText);
         emailText = view.findViewById(R.id.emailText);
         phoneText = view.findViewById(R.id.phoneText);
         semesterText = view.findViewById(R.id.semesterText);
+        viewCountText = view.findViewById(R.id.viewCountText);
 
         nameInputLayout = view.findViewById(R.id.nameInputLayout);
         idInputLayout = view.findViewById(R.id.idInputLayout);
@@ -63,6 +63,19 @@ public class ProfileFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         loadUserData();
+
+
+        boolean canViewMetrics = UserData.getInstance().getRole() != null &&
+                (UserData.getInstance().getRole().equalsIgnoreCase("admin") ||
+                        UserData.getInstance().getRole().equalsIgnoreCase("moderator"));
+
+        if (canViewMetrics) {
+            viewCountText.setVisibility(View.VISIBLE);
+            loadViewCount();
+        } else {
+            viewCountText.setVisibility(View.GONE);
+        }
+
         return view;
     }
 
@@ -81,10 +94,36 @@ public class ProfileFragment extends Fragment {
         semesterEdit.setText(user.getSemester());
     }
 
+    private void loadViewCount() {
+        UserData user = UserData.getInstance();
+        String currentStudentId = user.getStudentId();
+
+        viewCountText.setText("Views: Loading...");
+
+        db.collection("viewCounter")
+                .document(currentStudentId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Long totalViews = 0L;
+                    if (documentSnapshot.exists()) {
+                        Long count = documentSnapshot.getLong("viewCount");
+                        if (count != null) {
+                            totalViews = count;
+                        }
+                    }
+                    viewCountText.setText("Total File Views: " + String.valueOf(totalViews));
+                })
+                .addOnFailureListener(e -> {
+                    viewCountText.setText("Total File Views: N/A (Error)");
+                });
+    }
+
+
     private void switchToEditMode() {
         idText.setVisibility(View.GONE);
         phoneText.setVisibility(View.GONE);
         semesterText.setVisibility(View.GONE);
+        viewCountText.setVisibility(View.GONE);
 
         nameInputLayout.setVisibility(View.VISIBLE);
         idInputLayout.setVisibility(View.VISIBLE);
@@ -111,10 +150,17 @@ public class ProfileFragment extends Fragment {
         phoneText.setVisibility(View.VISIBLE);
         semesterText.setVisibility(View.VISIBLE);
 
+        boolean canViewMetrics = UserData.getInstance().getRole() != null &&
+                (UserData.getInstance().getRole().equalsIgnoreCase("admin") ||
+                        UserData.getInstance().getRole().equalsIgnoreCase("moderator"));
+
+        if (canViewMetrics) {
+            viewCountText.setVisibility(View.VISIBLE);
+        }
+
         editButton.setVisibility(View.VISIBLE);
         saveButton.setVisibility(View.GONE);
     }
-
 
     private void saveUserData() {
         String newName = nameEdit.getText().toString().trim();

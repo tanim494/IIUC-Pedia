@@ -10,80 +10,86 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder> {
 
-    private List<FileItem> fileList;
-    private OnItemClickListener listener;
+    private final List<FileItem> displayList;
+    private final List<FileItem> fullList;
+    private final OnItemClickListener listener;
 
     public interface OnItemClickListener {
         void onItemClick(FileItem item);
-        void onDeleteClick(FileItem item);  // New callback for delete
+        void onDeleteClick(FileItem item);
     }
 
-    public FileAdapter(List<FileItem> fileList, OnItemClickListener listener) {
-        this.fileList = fileList;
+    public FileAdapter(List<FileItem> initialFiles, OnItemClickListener listener) {
+        this.fullList = new ArrayList<>(initialFiles);
+        this.displayList = new ArrayList<>(initialFiles);
         this.listener = listener;
+    }
+
+    public void updateData(List<FileItem> newFiles) {
+        this.fullList.clear();
+        this.fullList.addAll(newFiles);
+        filterList("");
+    }
+
+    public void filterList(String query) {
+        displayList.clear();
+        if (query.isEmpty()) {
+            displayList.addAll(fullList);
+        } else {
+            String lowerCaseQuery = query.toLowerCase();
+            for (FileItem item : fullList) {
+                if (item.getFileName().toLowerCase().contains(lowerCaseQuery) ||
+                        item.getUploader().toLowerCase().contains(lowerCaseQuery)) {
+                    displayList.add(item);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public FileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
-        return new FileViewHolder(v);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
+        return new FileViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull FileViewHolder holder, int position) {
-        FileItem item = fileList.get(position);
-        holder.fileName.setText(item.getFileName());
-        holder.uploaderName.setText("Uploaded by: " + item.getUploader());
+        FileItem item = displayList.get(position);
+        holder.tvFileName.setText(item.getFileName());
 
-        // You can use a fixed PDF icon, or load thumbnails if available
-        holder.fileThumbnail.setImageResource(R.drawable.ic_pdf);
+        String uploaderText = item.getUploader() != null && !item.getUploader().isEmpty()
+                ? "Uploader: " + item.getUploader()
+                : "Uploader unknown";
+        holder.tvUploader.setText(uploaderText);
 
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onItemClick(item);
-            }
-        });
-
-        String currentUserEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-        boolean isAdmin = UserData.getInstance().getRole().equalsIgnoreCase("admin");
-
-        // Show delete button only if current user is uploader or admin
-        if (isAdmin || (currentUserEmail != null && currentUserEmail.equalsIgnoreCase(item.getUploader()))) {
-            holder.deleteButton.setVisibility(View.VISIBLE);
-        } else {
-            holder.deleteButton.setVisibility(View.GONE);
-        }
-
-        holder.deleteButton.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onDeleteClick(item);
-            }
-        });
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
+        holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(item));
     }
 
     @Override
     public int getItemCount() {
-        return fileList.size();
+        return displayList.size();
     }
 
     public static class FileViewHolder extends RecyclerView.ViewHolder {
-        TextView fileName, uploaderName;
-        ImageView fileThumbnail;
-        ImageButton deleteButton;
+        TextView tvFileName;
+        TextView tvUploader;
+        ImageView ivFileIcon;
+        ImageButton btnDelete;
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
-            fileName = itemView.findViewById(R.id.fileName);
-            uploaderName = itemView.findViewById(R.id.uploaderName);
-            fileThumbnail = itemView.findViewById(R.id.fileThumbnail);
-            deleteButton = itemView.findViewById(R.id.deleteButton);
+            tvFileName = itemView.findViewById(R.id.tv_file_name);
+            tvUploader = itemView.findViewById(R.id.tv_uploader);
+            ivFileIcon = itemView.findViewById(R.id.iv_file_icon);
+            btnDelete = itemView.findViewById(R.id.btn_delete);
         }
     }
 }

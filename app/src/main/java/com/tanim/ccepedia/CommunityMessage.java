@@ -10,7 +10,6 @@ public class CommunityMessage {
     private String messageText;
     private Date timestamp;
 
-    // Required public no-argument constructor for Firestore deserialization
     public CommunityMessage() {
     }
 
@@ -21,7 +20,6 @@ public class CommunityMessage {
         this.messageText = messageText;
     }
 
-    // Getters
     public String getUserEmail() {
         return userEmail;
     }
@@ -38,11 +36,9 @@ public class CommunityMessage {
         return messageText;
     }
 
-    // TIMESTAMP GETTER (CRITICAL FOR FIREBASE DESERIALIZATION)
     @ServerTimestamp
     public Date getTimestamp() { return timestamp; }
 
-    // Setters (required by Firestore)
     public void setUserStudentId(String userStudentId) {
         this.userStudentId = userStudentId;
     }
@@ -58,6 +54,5 @@ public class CommunityMessage {
         this.messageText = messageText;
     }
 
-    // TIMESTAMP SETTER
     public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 }

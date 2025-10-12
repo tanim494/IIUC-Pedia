@@ -4,50 +4,80 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
- public class SemesterResources extends Fragment {
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_semester_resources, container, false);
+import java.util.ArrayList;
+import java.util.List;
 
-            // Find the TextViews by their IDs
-            TextView semester1 = rootView.findViewById(R.id.semester1);
-            TextView semester2 = rootView.findViewById(R.id.semester2);
-            TextView semester3 = rootView.findViewById(R.id.semester3);
-            TextView semester4 = rootView.findViewById(R.id.semester4);
-            TextView semester5 = rootView.findViewById(R.id.semester5);
-            TextView semester6 = rootView.findViewById(R.id.semester6);
-            TextView semester7 = rootView.findViewById(R.id.semester7);
-            TextView semester8 = rootView.findViewById(R.id.semester8);
+public class SemesterResources extends Fragment implements SemesterAdapter.OnSemesterClickListener {
+    private RecyclerView recyclerView;
+    private SemesterAdapter adapter;
+    private List<Semester> semesterList;
 
-            // Set click listeners for each TextView
-            semester1.setOnClickListener(v -> openCourseListFragment("semester_1"));
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_semester_resources, container, false);
 
-            semester2.setOnClickListener(v -> openCourseListFragment("semester_2"));
+        recyclerView = rootView.findViewById(R.id.semester_recycler_view);
 
-            semester3.setOnClickListener(v -> openCourseListFragment("semester_3"));
+        semesterList = createSemesterData();
 
-            semester4.setOnClickListener(v -> openCourseListFragment("semester_4"));
+        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
+        recyclerView.setLayoutManager(layoutManager);
 
-            semester5.setOnClickListener(v -> openCourseListFragment("semester_5"));
+        adapter = new SemesterAdapter(semesterList, this);
+        recyclerView.setAdapter(adapter);
 
-            semester6.setOnClickListener(v -> openCourseListFragment("semester_6"));
+        return rootView;
+    }
 
-            semester7.setOnClickListener(v -> openCourseListFragment("semester_7"));
+    @Override
+    public void onSemesterClick(String semesterId) {
+        openCourseListFragment(semesterId);
+    }
 
-            semester8.setOnClickListener(v -> openCourseListFragment("semester_8"));
 
-            return rootView;
+    private void openCourseListFragment(String semesterId) {
+        CourseListFragment fragment = CourseListFragment.newInstance(semesterId);
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.Midcontainer, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private List<Semester> createSemesterData() {
+        List<Semester> list = new ArrayList<>();
+
+        int currentSemesterNumber;
+        try {
+            String currentSemesterString = UserData.getInstance().getSemester();
+            currentSemesterNumber = Integer.parseInt(currentSemesterString.replaceAll("[^0-9]", ""));
+        } catch (Exception e) {
+            currentSemesterNumber = 1;
         }
 
-     private void openCourseListFragment(String semesterId) {
-         CourseListFragment fragment = CourseListFragment.newInstance(semesterId);
-         getParentFragmentManager().beginTransaction()
-                 .replace(R.id.Midcontainer, fragment)
-                 .addToBackStack(null)
-                 .commit();
-     }
+        for (int i = 1; i <= 8; i++) {
+            String title = "Semester " + i;
+            String id = "semester_" + i;
+            String status;
+
+            if (i < currentSemesterNumber) {
+                status = "Completed";
+            } else if (i == currentSemesterNumber) {
+                status = "Current";
+            } else {
+                status = "Upcoming";
+            }
+
+            list.add(new Semester(title, id, status));
+        }
+
+        return list;
     }
+}

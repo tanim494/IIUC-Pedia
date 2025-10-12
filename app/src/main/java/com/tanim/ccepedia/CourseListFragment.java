@@ -4,13 +4,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -18,14 +19,15 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CourseListFragment extends Fragment {
+public class CourseListFragment extends Fragment implements CourseAdapter.OnCourseClickListener {
 
     private static final String ARG_SEMESTER_ID = "semesterId";
     private String semesterId;
 
     private FirebaseFirestore db;
-    private ListView listView;
-    private List<String> courseList = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private CourseAdapter adapter;
+    private SearchView searchView;
 
     public static CourseListFragment newInstance(String semesterId) {
         CourseListFragment fragment = new CourseListFragment();
@@ -50,9 +52,33 @@ public class CourseListFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_course_list, container, false);
-        listView = view.findViewById(R.id.courseListView);
+
+        recyclerView = view.findViewById(R.id.courseRecyclerView);
+        searchView = view.findViewById(R.id.searchViewCourses);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new CourseAdapter(new ArrayList<>(), this);
+        recyclerView.setAdapter(adapter);
+
+        setupSearch();
         fetchCourses();
         return view;
+    }
+
+    private void setupSearch() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                adapter.filterList(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.filterList(newText);
+                return true;
+            }
+        });
     }
 
     private void fetchCourses() {
@@ -65,19 +91,22 @@ public class CourseListFragment extends Fragment {
                         Toast.makeText(requireContext(), "No courses found", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    courseList.clear();
+                    List<Course> newCourseList = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        courseList.add(doc.getId());
-                    }
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, courseList);
-                    listView.setAdapter(adapter);
+                        String id = doc.getId();
 
-                    listView.setOnItemClickListener((parent, view, position, id) -> {
-                        String selectedCourse = courseList.get(position);
-                        openFileListFragment(selectedCourse);
-                    });
+                        String title = id;
+
+                        newCourseList.add(new Course(id, title));
+                    }
+                    adapter.updateData(newCourseList);
                 })
                 .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to load courses: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    @Override
+    public void onCourseClick(String courseId) {
+        openFileListFragment(courseId);
     }
 
     private void openFileListFragment(String courseId) {

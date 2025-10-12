@@ -13,7 +13,6 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -26,6 +25,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.File;
@@ -40,10 +40,10 @@ import java.util.Map;
 public class BusScheduleFragment extends Fragment {
 
     private ImageView scheduleImage;
-    private TextView scheduleTitle;
     private ProgressBar loadingSpinner;
     private LinearLayout contactsLayout;
-    private Button downloadButton;
+    private MaterialButton downloadButton;
+
     private FirebaseFirestore db;
     private String imageUrl;
 
@@ -54,7 +54,6 @@ public class BusScheduleFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_bus_schedule, container, false);
 
         scheduleImage = rootView.findViewById(R.id.scheduleImage);
-        scheduleTitle = rootView.findViewById(R.id.scheduleTitle);
         contactsLayout = rootView.findViewById(R.id.contactsLayout);
         downloadButton = rootView.findViewById(R.id.downloadButton);
         loadingSpinner = rootView.findViewById(R.id.loadingSpinner);
@@ -65,10 +64,12 @@ public class BusScheduleFragment extends Fragment {
         loadBusScheduleFromFirestore();
 
         downloadButton.setOnClickListener(v -> {
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                checkPermissionAndDownload(imageUrl);
+            String fileUrl = imageUrl;
+
+            if (fileUrl != null && !fileUrl.isEmpty()) {
+                checkPermissionAndDownload(fileUrl);
             } else {
-                Toast.makeText(requireContext(), "No image to download", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Download link not available", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -79,24 +80,18 @@ public class BusScheduleFragment extends Fragment {
         db.collection("resources").document("bus_schedule")
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    loadingSpinner.setVisibility(View.GONE);
+
                     if (documentSnapshot.exists()) {
                         imageUrl = documentSnapshot.getString("url");
-                        String title = documentSnapshot.getString("title");
                         List<Map<String, Object>> contacts = (List<Map<String, Object>>) documentSnapshot.get("contacts");
-
-                        if (title != null) {
-                            scheduleTitle.setText(title);
-                        } else {
-                            scheduleTitle.setText("Bus Schedule");
-                        }
 
                         if (imageUrl != null && !imageUrl.isEmpty()) {
                             Glide.with(requireContext())
                                     .load(imageUrl)
                                     .into(scheduleImage);
-                            loadingSpinner.setVisibility(View.GONE);
                         } else {
-                            loadingSpinner.setVisibility(View.GONE);
+                            scheduleImage.setVisibility(View.GONE);
                             Toast.makeText(requireContext(), "No image URL found", Toast.LENGTH_SHORT).show();
                         }
 
@@ -111,53 +106,51 @@ public class BusScheduleFragment extends Fragment {
                         Toast.makeText(requireContext(), "No bus schedule found in database", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to load bus schedule", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    loadingSpinner.setVisibility(View.GONE);
+                    Toast.makeText(requireContext(), "Failed to load bus schedule", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void addContactsToLayout(List<Map<String, Object>> contacts) {
         contactsLayout.removeAllViews();
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
 
         for (Map<String, Object> contact : contacts) {
             String name = (String) contact.get("name");
             String phone = (String) contact.get("phone");
 
             if (name != null && phone != null) {
-                TextView contactTextView = new TextView(requireContext(), null, 0, R.style.ButtonStyle);
-                contactTextView.setText(name + ": " + phone);
-                contactTextView.setAllCaps(false); // Disable all caps if needed
-                contactTextView.setPadding(24, 24, 24, 24);
+                View contactView = inflater.inflate(R.layout.item_contact, contactsLayout, false);
+                TextView nameView = contactView.findViewById(R.id.contactNameTextView);
+                TextView numberView = contactView.findViewById(R.id.contactNumberTextView);
 
-                // Set margin bottom to space between buttons
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-                params.setMargins(0, 0, 0, 24);
-                contactTextView.setLayoutParams(params);
+                nameView.setText(name);
+                numberView.setText(phone);
 
-                contactTextView.setOnClickListener(v -> {
+                contactView.setOnClickListener(v -> {
                     Intent callIntent = new Intent(Intent.ACTION_DIAL);
                     callIntent.setData(Uri.parse("tel:" + phone));
-                    Toast.makeText(requireContext(), "Calling " + name, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Dialing " + name, Toast.LENGTH_SHORT).show();
                     startActivity(callIntent);
                 });
 
-                contactsLayout.addView(contactTextView);
+                contactsLayout.addView(contactView);
             }
         }
     }
 
 
-    private void checkPermissionAndDownload(String imageUrl) {
+    private void checkPermissionAndDownload(String fileUrl) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
                 ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(),
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_WRITE_STORAGE);
-            this.imageUrl = imageUrl;
+            this.imageUrl = fileUrl;
         } else {
-            new DownloadImageTask().execute(imageUrl);
+            new DownloadImageTask().execute(fileUrl);
         }
     }
 
@@ -171,7 +164,6 @@ public class BusScheduleFragment extends Fragment {
 
         if (requestCode == REQUEST_WRITE_STORAGE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Now permission is granted, retry download
                 if (imageUrl != null) {
                     new DownloadImageTask().execute(imageUrl);
                 }
@@ -187,6 +179,12 @@ public class BusScheduleFragment extends Fragment {
         private String savedFilePath = null;
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Toast.makeText(requireContext(), "Starting download...", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
         protected Boolean doInBackground(String... urls) {
             String urlToDownload = urls[0];
 
@@ -195,15 +193,28 @@ public class BusScheduleFragment extends Fragment {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
 
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return false;
+                }
+
                 InputStream input = connection.getInputStream();
 
-                String extension = urlToDownload.substring(urlToDownload.lastIndexOf("."));
+                String extension = ".jpg";
+                if (urlToDownload.contains(".")) {
+                    extension = urlToDownload.substring(urlToDownload.lastIndexOf("."));
+                }
+
+                String mimeType = "image/" + extension.replace(".", "");
+                if (extension.equalsIgnoreCase(".pdf")) {
+                    mimeType = "application/pdf";
+                }
+
                 String fileName = "bus_schedule_" + System.currentTimeMillis() + extension;
 
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                     ContentValues values = new ContentValues();
                     values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
-                    values.put(MediaStore.Downloads.MIME_TYPE, "image/" + extension.replace(".", ""));
+                    values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
                     values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/CCE Pedia/Bus Schedule");
 
                     Uri uri = requireContext().getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
@@ -217,15 +228,13 @@ public class BusScheduleFragment extends Fragment {
                         }
                         output.close();
                         input.close();
-                        savedFilePath = Environment.DIRECTORY_DOWNLOADS + "/CCE Pedia/Bus Schedule/" + fileName;
+                        savedFilePath = "Downloads/CCE Pedia/Bus Schedule/" + fileName;
                         return true;
                     } else {
-                        // ❗ Handle null uri case
                         return false;
                     }
 
                 } else {
-                    // Android 9 and below
                     File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                     File ccePediaFolder = new File(downloadsFolder, "CCE Pedia/Bus Schedule");
                     if (!ccePediaFolder.exists()) ccePediaFolder.mkdirs();
@@ -242,6 +251,13 @@ public class BusScheduleFragment extends Fragment {
 
                     output.close();
                     input.close();
+
+                    if (file.exists() && file.length() > 0) {
+                        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                        mediaScanIntent.setData(Uri.fromFile(file));
+                        requireContext().sendBroadcast(mediaScanIntent);
+                    }
+
                     return true;
                 }
 
@@ -249,8 +265,6 @@ public class BusScheduleFragment extends Fragment {
                 e.printStackTrace();
                 return false;
             }
-
-            // No unreachable code here — every path now returns
         }
 
 
@@ -259,7 +273,7 @@ public class BusScheduleFragment extends Fragment {
             if (success) {
                 Toast.makeText(requireContext(), "Downloaded to: " + savedFilePath, Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(requireContext(), "Failed to download bus schedule", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Failed to download bus schedule. Check connection or URL.", Toast.LENGTH_SHORT).show();
             }
         }
     }

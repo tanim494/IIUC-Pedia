@@ -24,6 +24,8 @@ public class BatchWiseFragment extends Fragment {
     private RecyclerView recyclerView;
     private DriveLinkAdapter adapter;
     private List<DriveLink> linkList;
+    private List<DriveLink> fullLinkList;
+    private androidx.appcompat.widget.SearchView searchView;
 
     public static BatchWiseFragment newInstance(String gender) {
         BatchWiseFragment fragment = new BatchWiseFragment();
@@ -48,14 +50,37 @@ public class BatchWiseFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerViewBatchWise);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        searchView = view.findViewById(R.id.searchViewBatchResources);
+
         linkList = new ArrayList<>();
+        fullLinkList = new ArrayList<>();
         adapter = new DriveLinkAdapter(linkList);
         recyclerView.setAdapter(adapter);
 
+        setupSearch();
         fetchBatchWiseLinks();
 
         return view;
     }
+
+    private void setupSearch() {
+        searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                adapter.filterList(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (adapter != null) {
+                    adapter.filterList(newText);
+                }
+                return true;
+            }
+        });
+    }
+
 
     private void fetchBatchWiseLinks() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -63,12 +88,17 @@ public class BatchWiseFragment extends Fragment {
                 .whereEqualTo("gender", gender)
                 .get()
                 .addOnSuccessListener(querySnapshots -> {
-                    linkList.clear();
+                    fullLinkList.clear();
                     for (DocumentSnapshot doc : querySnapshots) {
                         String title = doc.getString("title");
                         String url = doc.getString("url");
-                        linkList.add(new DriveLink(title, url));
+                        DriveLink link = new DriveLink(title, url);
+                        fullLinkList.add(link);
                     }
+
+                    linkList.clear();
+                    linkList.addAll(fullLinkList);
+                    adapter.setFullList(fullLinkList);
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e ->

@@ -14,11 +14,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.material.card.MaterialCardView; // New Import
+import com.google.android.material.card.MaterialCardView;
 
 public class Resources extends Fragment {
 
-    // 1. Change member variables from TextView to MaterialCardView
     private MaterialCardView cardFacebookPage;
     private MaterialCardView cardFacebookFemPage;
     private MaterialCardView cardSemesterResourcesPage;
@@ -29,10 +28,8 @@ public class Resources extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Ensure you are using the correct, updated XML layout file
         View rootView = inflater.inflate(R.layout.fragment_resources, container, false);
 
-        // 2. Initialize the new MaterialCardView IDs
         cardFacebookPage = rootView.findViewById(R.id.cardFacebookPage);
         cardFacebookFemPage = rootView.findViewById(R.id.cardFacebookFemPage);
         cardSemesterResourcesPage = rootView.findViewById(R.id.cardSemesterResourcesPage);
@@ -40,7 +37,6 @@ public class Resources extends Fragment {
         cardBusPage = rootView.findViewById(R.id.cardBusPage);
         cardDriveLinks = rootView.findViewById(R.id.cardDriveLinks);
 
-        // 3. Attach Click Listeners to the CardViews
         cardFacebookPage.setOnClickListener(v -> openWebPage("https://www.facebook.com/profile.php?id=100090282199663"));
 
         cardFacebookFemPage.setOnClickListener(v -> openWebPage("https://www.facebook.com/profile.php?id=100091710725410"));
@@ -56,7 +52,6 @@ public class Resources extends Fragment {
         return rootView;
     }
 
-    // Helper method to open other Fragments (Improves code readability)
     private void openFragment(Fragment fragment) {
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -67,7 +62,7 @@ public class Resources extends Fragment {
 
 
     private void showGenderDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()); // Use requireContext()
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Select Section")
                 .setItems(new String[]{"Male", "Female"}, (dialog, which) -> {
                     String gender = (which == 0) ? "male" : "female";
@@ -79,7 +74,6 @@ public class Resources extends Fragment {
     private void openBatchWiseFragment(String gender) {
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        // Assuming BatchWiseFragment has a newInstance method for arguments
         fragmentTransaction.replace(R.id.Midcontainer, BatchWiseFragment.newInstance(gender));
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();

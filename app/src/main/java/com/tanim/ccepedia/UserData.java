@@ -4,7 +4,6 @@ public class UserData {
     private static UserData instance;
     private String studentId, name, email, gender, phone, semester, role;
 
-    // Private constructor to prevent instantiation
     private UserData() {}
 
     public static UserData getInstance() {
@@ -14,7 +13,6 @@ public class UserData {
         return instance;
     }
 
-    // Setters and Getters for the data
     public void setName(String name) {
         this.name = name;
     }

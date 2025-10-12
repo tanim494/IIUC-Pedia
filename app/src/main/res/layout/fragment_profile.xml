@@ -91,6 +91,16 @@
                 android:textColor="#333333"
                 android:paddingVertical="8dp" />
 
+            <TextView
+                android:id="@+id/viewCountText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Views: Loading..."
+                android:textSize="18sp"
+                android:textColor="@color/Green"
+                android:textStyle="bold"
+                android:paddingVertical="8dp" />
+
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton

@@ -2,153 +2,146 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
-    >
+    android:padding="24dp">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/textbg"
-        android:padding="20dp">
-
-        <!-- Semester Selection -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Semester"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:layout_marginBottom="4dp" />
-
-        <androidx.appcompat.widget.AppCompatSpinner
-            android:id="@+id/spinnerSemester"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:spinnerMode="dropdown"
-            android:popupBackground="@android:color/darker_gray"
-            android:padding="12dp" />
-
-        <!-- Course Selection -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Course"
-            android:layout_marginTop="24dp"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:layout_marginBottom="4dp" />
-
-        <androidx.appcompat.widget.AppCompatSpinner
-            android:id="@+id/spinnerCourse"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:popupBackground="@android:color/white"
-            android:layout_marginBottom="20dp"
-            android:enabled="false"
-            android:padding="12dp" />
-
-        <!-- File Picker Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Select a file to upload"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"
-            android:textColor="@color/white"
-            />
-
-        <Button
-            android:id="@+id/btnPickFile"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Choose File"
-            android:backgroundTint="@color/teal_700"
-            android:textColor="@android:color/white"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:layout_gravity="center_horizontal"
-            android:elevation="10dp"
-            android:stateListAnimator="@null" />
-
-        <!-- Filename Input -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Give suitable filename"
-            android:layout_marginTop="15dp"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:layout_marginBottom="4dp" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilFileName"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="File name"
-            app:boxBackgroundColor="@android:color/darker_gray"
-            app:boxBackgroundMode="outline"
-            app:boxStrokeColor="@color/teal_700"
-            app:errorEnabled="true">
+            android:orientation="vertical"
+            android:background="@drawable/rounded_whitebg"
+            android:padding="20dp">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etFileName"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Semester"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="4dp" />
+
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/spinnerSemester"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:spinnerMode="dropdown"
+                android:popupBackground="@color/white"
+                android:padding="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Course"
+                android:layout_marginTop="24dp"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="4dp" />
+
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/spinnerCourse"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:popupBackground="@color/white"
+                android:layout_marginBottom="20dp"
+                android:enabled="false"
+                android:padding="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select a file to upload"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/black"
+                />
+
+            <Button
+                android:id="@+id/btnPickFile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choose File"
+                android:backgroundTint="@color/Green"
+                android:textColor="@android:color/white"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:layout_gravity="center_horizontal"
+                android:elevation="10dp"
+                android:stateListAnimator="@null" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Give suitable filename"
+                android:layout_marginTop="15dp"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="4dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilFileName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
-                android:maxLines="1"
-                android:padding="12dp" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:hint="File name"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="@color/Green"
+                app:errorEnabled="true">
 
-        <!-- Upload Button -->
-        <Button
-            android:id="@+id/btnUpload"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etFileName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:padding="12dp"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/btnUpload"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Upload"
+                android:backgroundTint="@color/Green"
+                android:textColor="@android:color/white"
+                android:padding="14dp"
+                android:enabled="false"
+                android:elevation="4dp"
+                android:stateListAnimator="@null" />
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_gravity="center"/>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Upload"
-            android:backgroundTint="@color/teal_700"
-            android:textColor="@android:color/white"
-            android:padding="14dp"
-            android:enabled="false"
-            android:elevation="4dp"
-            android:stateListAnimator="@null" />
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:layout_gravity="center"/>
+            android:orientation="vertical"
+            android:layout_marginTop="30dp"
+            android:padding="20dp"
+            android:background="@drawable/rounded_whitebg"
+            android:layout_gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/thankText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
 
     </LinearLayout>
-
-    <!-- Thank You Section -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="30dp"
-        android:padding="20dp"
-        android:background="@drawable/textbg"
-        android:layout_gravity="center_horizontal">
-
-    <TextView
-        android:id="@+id/thankText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_gravity="center_horizontal" />
-</LinearLayout>
-    </LinearLayout>
-
 
 </ScrollView>
