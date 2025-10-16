@@ -38,8 +38,6 @@ It provides semester-wise and batch-wise access to lecture notes, lab resources,
 |------|----------------|----------------|----------|
 | ![Home Screenshot](docs/screenshot1.png) | ![List Screenshot](docs/screenshot2.png) | ![Download Screenshot](docs/screenshot3.png) | ![Share Screenshot](docs/screenshot4.png) |
 
-*(Add your screenshots to `/docs/` or replace links with your actual image paths.)*
-
 ---
 
 ## 🔗 Download APK
