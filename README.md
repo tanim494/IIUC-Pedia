@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 
 **CCE Pedia** is a comprehensive study companion Android app built for IIUC Computer & Communication Engineering (CCE) students.
-It provides semester-wise and batch-wise access to lecture notes, lab resources, and question papers — all neatly organized in one place.
+It provides semester-wise and batch-wise access to lecture notes, lab resources, and question papers, all neatly organized in one place.
 
 ---
 
