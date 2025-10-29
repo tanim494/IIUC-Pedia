@@ -12,7 +12,6 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -103,15 +102,21 @@ public class PdfViewerFragment extends Fragment {
                 InputStream input = connection.getInputStream();
 
                 String cleanFileName = this.fileName;
-                if (cleanFileName == null || cleanFileName.trim().isEmpty()) {
-                    cleanFileName = "temp_pdf_" + System.currentTimeMillis() + ".pdf";
-                }
-                if (!cleanFileName.toLowerCase().endsWith(".pdf")) {
-                    cleanFileName += ".pdf";
-                }
-                cleanFileName = cleanFileName.replace(" ", "_").replace("/", "_");
+                String prefixedFileName;
 
-                file = new File(requireContext().getCacheDir(), cleanFileName);
+                if (cleanFileName == null || cleanFileName.trim().isEmpty()) {
+                    cleanFileName = "temp_pdf_" + System.currentTimeMillis();
+                }
+
+                if (cleanFileName.toLowerCase().endsWith(".pdf")) {
+                    cleanFileName = cleanFileName.substring(0, cleanFileName.length() - 4);
+                }
+
+                prefixedFileName = "CCE_Pedia_" + cleanFileName;
+
+                prefixedFileName = prefixedFileName.replace(" ", "_").replace("/", "_") + ".pdf";
+
+                file = new File(requireContext().getCacheDir(), prefixedFileName);
 
                 FileOutputStream output = new FileOutputStream(file);
 
@@ -287,7 +292,6 @@ public class PdfViewerFragment extends Fragment {
                 }
 
                 if (fileToDelete != null && fileToDelete.exists() && fileToDelete.delete()) {
-                    // Cleanup successful
                 }
             } catch (Exception e) {
                 e.printStackTrace();

@@ -102,9 +102,7 @@ public class CommunityActivity extends AppCompatActivity implements MessageInter
             new AlertDialog.Builder(this)
                     .setTitle("Delete Message")
                     .setMessage("Are you sure you want to delete this message? This action cannot be undone.")
-                    .setPositiveButton("Delete", (dialog, which) -> {
-                        deleteMessage(message);
-                    })
+                    .setPositiveButton("Delete", (dialog, which) -> deleteMessage(message))
                     .setNegativeButton(android.R.string.cancel, null)
                     .show();
         }
@@ -123,9 +121,7 @@ public class CommunityActivity extends AppCompatActivity implements MessageInter
                     if (task.isSuccessful() && task.getResult() != null && !task.getResult().isEmpty()) {
                         String documentId = task.getResult().getDocuments().get(0).getId();
                         chatRef.document(documentId).delete()
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "Message deleted.", Toast.LENGTH_SHORT).show();
-                                })
+                                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Message deleted.", Toast.LENGTH_SHORT).show())
                                 .addOnFailureListener(e -> {
                                     Log.e(TAG, "Error deleting message", e);
                                     Toast.makeText(this, "Failed to delete message: " + e.getMessage(), Toast.LENGTH_LONG).show();

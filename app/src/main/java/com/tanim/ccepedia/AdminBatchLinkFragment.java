@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ADMBatchLinkFragment extends Fragment {
+public class AdminBatchLinkFragment extends Fragment {
 
     private Spinner spinnerGender;
     private EditText editTitle, editUrl;
@@ -40,7 +40,7 @@ public class ADMBatchLinkFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_adm_batch_link, container, false);
+        View view = inflater.inflate(R.layout.fragment_admin_batch_link, container, false);
 
         spinnerGender = view.findViewById(R.id.spinnerGender);
         editTitle = view.findViewById(R.id.editTitle);
@@ -50,11 +50,7 @@ public class ADMBatchLinkFragment extends Fragment {
         btnDelete = view.findViewById(R.id.btnDelete);
         listViewLinks = view.findViewById(R.id.listViewLinks);
 
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
-                getContext(),
-                android.R.layout.simple_spinner_item,
-                new String[]{"Male", "Female"}
-        );
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, new String[]{"Male", "Female"});
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerGender.setAdapter(spinnerAdapter);
 
@@ -71,7 +67,15 @@ public class ADMBatchLinkFragment extends Fragment {
         listViewLinks.setOnItemClickListener((parent, view1, position, id) -> {
             BatchLink selectedLink = batchLinks.get(position);
             selectedDocId = selectedLink.id;
-            spinnerGender.setSelection(selectedLink.gender.equals("Male") ? 0 : 1);
+
+            String linkGender = selectedLink.gender != null ? selectedLink.gender.trim() : "";
+
+            if (linkGender.equalsIgnoreCase("Male")) {
+                spinnerGender.setSelection(0);
+            } else {
+                spinnerGender.setSelection(1);
+            }
+
             editTitle.setText(selectedLink.title);
             editUrl.setText(selectedLink.url);
 

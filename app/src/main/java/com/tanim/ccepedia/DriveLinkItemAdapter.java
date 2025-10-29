@@ -37,7 +37,7 @@ public class DriveLinkItemAdapter extends RecyclerView.Adapter<DriveLinkItemAdap
     @Override
     public DriveLinkItemAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_adm_drive_link, parent, false);
+                .inflate(R.layout.item_admin_drive_link, parent, false);
         return new ViewHolder(v);
     }
 

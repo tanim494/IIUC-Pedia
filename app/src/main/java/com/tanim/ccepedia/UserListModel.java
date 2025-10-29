@@ -1,5 +1,7 @@
 package com.tanim.ccepedia;
 
+import com.google.firebase.firestore.PropertyName;
+
 import java.util.Date;
 
 public class UserListModel {
@@ -19,7 +21,9 @@ public class UserListModel {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
+    @PropertyName("id")
     public String getStudentId() { return studentId; }
+    @PropertyName("id")
     public void setStudentId(String studentId) { this.studentId = studentId; }
 
     public String getEmail() { return email; }

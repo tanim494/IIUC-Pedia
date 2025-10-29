@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,6 +37,7 @@ public class FileListFragment extends Fragment {
     private FileAdapter adapter;
     private ProgressBar loadingSpinner;
     private SearchView searchView;
+    private TextView emptyStateText;
 
     public static FileListFragment newInstance(String semesterId, String courseId) {
         FileListFragment fragment = new FileListFragment();
@@ -66,6 +68,7 @@ public class FileListFragment extends Fragment {
         recyclerView = view.findViewById(R.id.fileRecyclerView);
         loadingSpinner = view.findViewById(R.id.loadingSpinner);
         searchView = view.findViewById(R.id.searchViewFiles);
+        emptyStateText = view.findViewById(R.id.emptyStateText);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -129,7 +132,7 @@ public class FileListFragment extends Fragment {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     loadingSpinner.setVisibility(View.GONE);
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(requireContext(), "No files found", Toast.LENGTH_SHORT).show();
+                        emptyStateText.setVisibility(View.VISIBLE);
                         return;
                     }
 
@@ -150,7 +153,7 @@ public class FileListFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> {
                     loadingSpinner.setVisibility(View.GONE);
-                    Toast.makeText(requireContext(), "Failed to load files: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    emptyStateText.setVisibility(View.VISIBLE);
                 });
     }
 
@@ -161,21 +164,19 @@ public class FileListFragment extends Fragment {
                 .child(semesterId + "/" + courseId + "/" + item.getFileName());
 
         fileRef.delete()
-                .addOnSuccessListener(aVoid -> {
-                    db.collection("semesters")
-                            .document(semesterId)
-                            .collection("courses")
-                            .document(courseId)
-                            .collection("files")
-                            .document(item.getId())
-                            .delete()
-                            .addOnSuccessListener(aVoid1 -> {
-                                Toast.makeText(requireContext(), "File deleted successfully", Toast.LENGTH_SHORT).show();
-                                fetchFiles();
-                            })
-                            .addOnFailureListener(e ->
-                                    Toast.makeText(requireContext(), "Failed to delete metadata: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                })
+                .addOnSuccessListener(aVoid -> db.collection("semesters")
+                        .document(semesterId)
+                        .collection("courses")
+                        .document(courseId)
+                        .collection("files")
+                        .document(item.getId())
+                        .delete()
+                        .addOnSuccessListener(aVoid1 -> {
+                            Toast.makeText(requireContext(), "File deleted successfully", Toast.LENGTH_SHORT).show();
+                            fetchFiles();
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(requireContext(), "Failed to delete metadata: " + e.getMessage(), Toast.LENGTH_SHORT).show()))
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(), "Failed to delete file: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }

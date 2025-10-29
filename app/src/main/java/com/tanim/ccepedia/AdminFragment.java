@@ -31,11 +31,11 @@ public class AdminFragment extends Fragment {
         btnAppConfig = view.findViewById(R.id.btnAppConfig);
 
         btnUserList.setOnClickListener(v -> replaceFragment(new ADMUserListFragment()));
-        btnBatchLinks.setOnClickListener(v -> replaceFragment(new ADMBatchLinkFragment()));
-        btnDriveLinks.setOnClickListener(v -> replaceFragment(new ADMDriveLinksFragment()));
+        btnBatchLinks.setOnClickListener(v -> replaceFragment(new AdminBatchLinkFragment()));
+        btnDriveLinks.setOnClickListener(v -> replaceFragment(new AdminDriveLinksFragment()));
         btnMessages.setOnClickListener(v -> replaceFragment(new ManageMessagesNoticesFragment()));
-        btnBusSchedule.setOnClickListener(v -> replaceFragment(new ADMBusFragment()));
-        btnAppConfig.setOnClickListener(v -> replaceFragment(new ADMConfigFragment()));
+        btnBusSchedule.setOnClickListener(v -> replaceFragment(new AdminBusFragment()));
+        btnAppConfig.setOnClickListener(v -> replaceFragment(new AdminConfigFragment()));
 
         return view;
     }

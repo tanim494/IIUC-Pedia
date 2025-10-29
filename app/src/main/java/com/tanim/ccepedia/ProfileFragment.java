@@ -113,9 +113,7 @@ public class ProfileFragment extends Fragment {
                     }
                     viewCountText.setText("Total File Views: " + String.valueOf(totalViews));
                 })
-                .addOnFailureListener(e -> {
-                    viewCountText.setText("Total File Views: N/A (Error)");
-                });
+                .addOnFailureListener(e -> viewCountText.setText("Total File Views: N/A (Error)"));
     }
 
 
@@ -133,7 +131,7 @@ public class ProfileFragment extends Fragment {
         String[] SEMESTERS = new String[] {"1", "2", "3", "4", "5", "6", "7", "8"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), R.layout.dropdown_item, SEMESTERS);
         semesterEdit.setAdapter(adapter);
-        semesterEdit.setOnClickListener(v -> { semesterEdit.showDropDown(); });
+        semesterEdit.setOnClickListener(v -> semesterEdit.showDropDown());
 
         editButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.VISIBLE);

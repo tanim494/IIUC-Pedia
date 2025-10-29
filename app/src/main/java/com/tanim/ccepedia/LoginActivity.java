@@ -135,14 +135,12 @@ public class LoginActivity extends AppCompatActivity {
                                 db.collection("users")
                                         .document(uid)
                                         .update("verified", true)
-                                        .addOnSuccessListener(aVoid -> {
-                                            db.collection("users")
-                                                    .document(uid)
-                                                    .get()
-                                                    .addOnSuccessListener(this::handleUserDocument)
-                                                    .addOnFailureListener(e ->
-                                                            showAlert("Failed to fetch user data"));
-                                        })
+                                        .addOnSuccessListener(aVoid -> db.collection("users")
+                                                .document(uid)
+                                                .get()
+                                                .addOnSuccessListener(this::handleUserDocument)
+                                                .addOnFailureListener(e ->
+                                                        showAlert("Failed to fetch user data")))
                                         .addOnFailureListener(e ->
                                                 Toast.makeText(LoginActivity.this, "Failed to update verification status", Toast.LENGTH_SHORT).show());
 

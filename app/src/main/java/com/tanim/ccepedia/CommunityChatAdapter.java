@@ -92,7 +92,7 @@ public class CommunityChatAdapter extends RecyclerView.Adapter<CommunityChatAdap
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     CommunityMessage message = ((CommunityChatAdapter) getBindingAdapter()).messageList.get(position);
-                    listener.onDeleteMessage(message); // Trigger delete logic in Activity
+                    listener.onDeleteMessage(message);
                 }
             });
 

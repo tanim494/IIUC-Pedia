@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:text="Add Notice"
             android:textAllCaps="false"
-            app:backgroundTint="#FFB74D"
+            app:backgroundTint="@color/Green"
             android:layout_marginBottom="12dp"
             app:cornerRadius="12dp" />
 
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:text="Add Message"
             android:textAllCaps="false"
-            app:backgroundTint="#FFB74D"
+            app:backgroundTint="@color/Green"
             android:layout_marginBottom="12dp"
             app:cornerRadius="12dp" />
 

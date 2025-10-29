@@ -1,86 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/backgroundColor"
     android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="center">
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Admin Control Panel"
+            android:textSize="24sp"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:gravity="center_horizontal" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnUserList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="User List"
-            android:layout_marginBottom="12dp"
-            app:cornerRadius="8dp"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            android:backgroundTint="@color/orange"
-            />
+            android:backgroundTint="@color/Green"
+            android:text="Manage Users"
+        />
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Content Management"
+            android:textSize="18sp"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBatchLinks"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Manage Batch-wise Links"
-            android:layout_marginBottom="12dp"
-            app:cornerRadius="8dp"
+            android:text="Manage Batch-wise Resources"
+            android:backgroundTint="@color/Green"
+            android:layout_marginBottom="8dp"
             android:textAllCaps="false"
             android:textSize="16sp"
-            android:backgroundTint="@color/orange"
             />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDriveLinks"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Manage Drive Links"
-            android:layout_marginBottom="12dp"
-            app:cornerRadius="8dp"
+            android:text="Manage Drive/External Links"
+            android:backgroundTint="@color/Green"
+            android:layout_marginBottom="8dp"
             android:textAllCaps="false"
             android:textSize="16sp"
-            android:backgroundTint="@color/orange"
             />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnMessages"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:backgroundTint="@color/Green"
             android:text="Manage Messages / Notices"
-            android:layout_marginBottom="12dp"
-            app:cornerRadius="8dp"
+            android:layout_marginBottom="8dp"
             android:textAllCaps="false"
             android:textSize="16sp"
-            android:backgroundTint="@color/orange"
             />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Transport &amp; Configuration"
+            android:textSize="18sp"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBusSchedule"
             android:layout_width="match_parent"
+            android:backgroundTint="@color/Green"
             android:layout_height="wrap_content"
             android:text="Manage Bus Schedule"
-            android:layout_marginBottom="12dp"
-            app:cornerRadius="8dp"
+            android:layout_marginBottom="8dp"
             android:textAllCaps="false"
             android:textSize="16sp"
-            android:backgroundTint="@color/orange"
             />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAppConfig"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Manage App Config"
-            android:layout_marginBottom="12dp"
-            app:cornerRadius="8dp"
+            android:backgroundTint="@color/Green"
+            android:text="Manage App Configuration"
+            android:layout_marginBottom="16dp"
             android:textAllCaps="false"
             android:textSize="16sp"
-            android:backgroundTint="@color/orange"
             />
 
     </LinearLayout>

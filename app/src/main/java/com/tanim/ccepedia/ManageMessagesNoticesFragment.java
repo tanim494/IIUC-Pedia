@@ -46,7 +46,7 @@ public class ManageMessagesNoticesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_manage_messages_notices, container, false);
+        View root = inflater.inflate(R.layout.fragment_admin_messages_notices, container, false);
 
         btnAddNotice = root.findViewById(R.id.btnAddNotice);
         btnAddMessage = root.findViewById(R.id.btnAddMessage);

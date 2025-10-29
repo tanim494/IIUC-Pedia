@@ -76,20 +76,20 @@ public class SemesterAdapter extends RecyclerView.Adapter<SemesterAdapter.Semest
 
             switch (status) {
                 case "Completed":
-                    numberBgColor = Color.parseColor("#4ade80"); // Dark Green/Success
-                    tagTextColor = Color.parseColor("#15803d"); // Medium Green
-                    tagBgColor = Color.parseColor("#dcfce7"); // Light Green
+                    numberBgColor = Color.parseColor("#4ade80");
+                    tagTextColor = Color.parseColor("#15803d");
+                    tagBgColor = Color.parseColor("#dcfce7");
                     break;
                 case "Current":
-                    numberBgColor = Color.parseColor("#3b82f6"); // Dark Blue
-                    tagTextColor = Color.parseColor("#2d69eb"); // Medium Blue
-                    tagBgColor = Color.parseColor("#dbeafe"); // Light Blue
+                    numberBgColor = Color.parseColor("#3b82f6");
+                    tagTextColor = Color.parseColor("#2d69eb");
+                    tagBgColor = Color.parseColor("#dbeafe");
                     break;
                 case "Upcoming":
                 default:
-                    numberBgColor = Color.parseColor("#9ca3af"); // Dark Gray
-                    tagTextColor = Color.parseColor("#4b5563"); // Medium Gray
-                    tagBgColor = Color.parseColor("#f3f4f6"); // Light Gray
+                    numberBgColor = Color.parseColor("#9ca3af");
+                    tagTextColor = Color.parseColor("#4b5563");
+                    tagBgColor = Color.parseColor("#f3f4f6");
                     break;
             }
 

@@ -1,89 +1,9 @@
 <resources>
-    <style name="DialogSlideAnim" parent="Theme.CCEPedia">
-        <item name="android:windowAnimationStyle">@style/DialogSlideAnimStyle</item>
-    </style>
-
-    <style name="DialogSlideAnimStyle" parent="@android:style/Animation.Dialog">
-        <item name="android:windowEnterAnimation">@android:anim/slide_in_left</item>
-        <item name="android:windowExitAnimation">@android:anim/slide_out_right</item>
-    </style>
-
-    <style name="CircleImageStyle">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">50%</item>
-    </style>
-
-    <style name="AppTheme.NoActionBar" parent="Theme.CCEPedia">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="parent">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-    </style>
-
-    <style name="loginParent" parent="parent">
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:background">@color/loginBkColor</item>
-        <item name="android:focusableInTouchMode">true</item>
-    </style>
-
-    <style name="headerText" parent="parent">
-        <item name="android:textSize">@dimen/headerTextSize</item>
-        <item name="android:textAlignment">center</item>
-        <item name="android:textColor">@color/whiteTextColor</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="loginCard" parent="parent" />
-
-    <style name="linearParent" parent="parent">
-        <item name="android:orientation">vertical</item>
-    </style>
-
-    <style name="headerTextPrimary" parent="headerText">
-        <item name="android:textColor">@color/primaryTextColor</item>
-    </style>
-
-    <style name="modifiedEditText" parent="parent">
-        <item name="android:textSize">@dimen/newsMoreTextSize</item>
-        <item name="android:backgroundTint">@color/primaryTextColor</item>
-    </style>
-
-    <style name="viewParent">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-    </style>
 
     <style name="Widget.App.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="itemBackground">@drawable/nav_item_background</item>
         <item name="itemPaddingTop">12dp</item>
         <item name="itemPaddingBottom">12dp</item>
-    </style>
-
-    <style name="ProfileTextView">
-        <item name="android:textSize">18sp</item>
-        <item name="android:textColor">#333333</item>
-        <item name="android:layout_marginBottom">12dp</item>
-        <item name="android:textStyle">normal</item>
-    </style>
-
-    <style name="ButtonStyle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:padding">10dp</item>
-        <item name="android:autoLink">web</item>
-        <item name="android:background">@drawable/buttonbg</item>
-        <item name="android:clickable">true</item>
-        <item name="android:focusable">true</item>
-        <item name="android:foreground">?attr/selectableItemBackground</item>
-        <item name="android:textAlignment">center</item>
-        <item name="android:textColor">#000</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:layout_marginBottom">80px</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:elevation">3dp</item>
     </style>
 
     <style name="listIconStyle">

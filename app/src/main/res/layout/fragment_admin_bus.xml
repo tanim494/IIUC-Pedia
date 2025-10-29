@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
+    android:gravity="center"
     >
 
     <com.google.android.material.textfield.TextInputLayout
@@ -12,7 +13,6 @@
         android:layout_height="wrap_content"
         android:hint="Bus Schedule Title"
         android:layout_marginBottom="16dp"
-        android:textColorHint="@color/white"
         >
 
         <com.google.android.material.textfield.TextInputEditText
@@ -20,7 +20,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:textColor="@color/white"
+            android:background="@color/white"
+            android:textColor="@color/black"
             />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -35,7 +36,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textUri"
-            android:textColor="@color/white"
+            android:background="@color/white"
+            android:textColor="@color/black"
             />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -47,6 +49,6 @@
         android:layout_gravity="center_horizontal"
         app:cornerRadius="12dp"
         android:textAllCaps="false"
-        android:backgroundTint="@color/orange"/>
+        android:backgroundTint="@color/Green"/>
 
 </LinearLayout>

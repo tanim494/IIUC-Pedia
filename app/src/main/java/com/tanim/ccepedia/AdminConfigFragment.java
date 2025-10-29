@@ -19,7 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ADMConfigFragment extends Fragment {
+public class AdminConfigFragment extends Fragment {
 
     private EditText editVersion, editUpdateLink;
     private Button btnSaveAppConfig;
@@ -32,7 +32,7 @@ public class ADMConfigFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_adm_config, container, false);
+        View view = inflater.inflate(R.layout.fragment_admin_config, container, false);
 
         editVersion = view.findViewById(R.id.editVersion);
         editUpdateLink = view.findViewById(R.id.editUpdateLink);

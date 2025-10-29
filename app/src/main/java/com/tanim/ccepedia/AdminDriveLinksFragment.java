@@ -22,7 +22,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ADMDriveLinksFragment extends Fragment {
+public class AdminDriveLinksFragment extends Fragment {
 
     private EditText editDriveTitle, editDriveUrl;
     private Button btnAddDriveLink;
@@ -31,7 +31,7 @@ public class ADMDriveLinksFragment extends Fragment {
     private CollectionReference driveLinksRef;
     private DriveLinkItemAdapter adapter;
     private List<DriveLinkItem> driveLinkList;
-    private String editingDocId = null; // null means adding new
+    private String editingDocId = null;
 
     @Nullable
     @Override
@@ -39,7 +39,7 @@ public class ADMDriveLinksFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_adm_drive_links, container, false);
+        View view = inflater.inflate(R.layout.fragment_admin_drive_links, container, false);
 
         editDriveTitle = view.findViewById(R.id.editDriveTitle);
         editDriveUrl = view.findViewById(R.id.editDriveUrl);

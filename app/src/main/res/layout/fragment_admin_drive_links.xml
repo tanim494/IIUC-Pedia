@@ -4,13 +4,13 @@
     android:padding="16dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/backgroundColor"
     >
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        app:hintTextColor="@color/white"
         >
 
         <com.google.android.material.textfield.TextInputEditText
@@ -19,13 +19,13 @@
             android:layout_height="wrap_content"
             android:hint="Drive Link Title"
             android:inputType="text"
-            android:textColor="@color/white"/>
+            android:background="@color/white"
+            />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:hintTextColor="@color/white"
         android:layout_marginBottom="16dp">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -34,7 +34,8 @@
             android:layout_height="wrap_content"
             android:hint="Drive Link URL"
             android:inputType="textUri"
-            android:textColor="@color/white"/>
+            android:background="@color/white"
+            />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
@@ -46,7 +47,7 @@
         android:layout_marginBottom="16dp"
         android:textAllCaps="false"
         app:cornerRadius="12dp"
-        android:backgroundTint="@color/orange"/>
+        android:backgroundTint="@color/Green"/>
 
     <TextView
         android:id="@+id/tvDriveLinksTitle"

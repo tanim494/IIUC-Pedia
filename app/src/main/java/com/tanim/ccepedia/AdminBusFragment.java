@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class ADMBusFragment extends Fragment {
+public class AdminBusFragment extends Fragment {
 
     private EditText editBusTitle, editBusUrl;
     private Button btnSaveBusSchedule;
@@ -29,7 +29,7 @@ public class ADMBusFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_adm_bus, container, false);
+        View view = inflater.inflate(R.layout.fragment_admin_bus, container, false);
 
         editBusTitle = view.findViewById(R.id.editBusTitle);
         editBusUrl = view.findViewById(R.id.editBusUrl);
@@ -76,12 +76,10 @@ public class ADMBusFragment extends Fragment {
         busScheduleDocRef.update("title", title, "url", url)
                 .addOnSuccessListener(aVoid ->
                         Toast.makeText(getContext(), "Bus schedule updated.", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> {
-                    busScheduleDocRef.set(new ManageBusSchedule(title, url))
-                            .addOnSuccessListener(aVoid ->
-                                    Toast.makeText(getContext(), "Bus schedule saved.", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e2 ->
-                                    Toast.makeText(getContext(), "Failed to save bus schedule.", Toast.LENGTH_SHORT).show());
-                });
+                .addOnFailureListener(e -> busScheduleDocRef.set(new ManageBusSchedule(title, url))
+                        .addOnSuccessListener(aVoid ->
+                                Toast.makeText(getContext(), "Bus schedule saved.", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e2 ->
+                                Toast.makeText(getContext(), "Failed to save bus schedule.", Toast.LENGTH_SHORT).show()));
     }
 }

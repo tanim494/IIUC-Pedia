@@ -19,6 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CCEPedia"
         tools:targetApi="31">
+
         <activity
             android:name=".CommunityActivity"
             android:exported="false" />

@@ -49,7 +49,9 @@ public class ADMUserListFragment extends Fragment {
         spinnerRole = view.findViewById(R.id.spinnerRole);
         spinnerVerified = view.findViewById(R.id.spinnerVerified);
         searchView = view.findViewById(R.id.searchView);
+
         searchView.setIconified(false);
+
         recyclerViewUsers = view.findViewById(R.id.recyclerViewUsers);
 
         userList = new ArrayList<>();
@@ -81,10 +83,10 @@ public class ADMUserListFragment extends Fragment {
     }
 
     private void setupSpinners() {
+        int itemLayout = android.R.layout.simple_spinner_dropdown_item;
+
         String[] genders = {"All", "male", "female"};
-        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(getContext(),
-                android.R.layout.simple_spinner_item, genders);
-        genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(getContext(), itemLayout, genders);
         spinnerGender.setAdapter(genderAdapter);
 
         String[] semesters = new String[9];
@@ -92,21 +94,15 @@ public class ADMUserListFragment extends Fragment {
         for (int i = 1; i <= 8; i++) {
             semesters[i] = String.valueOf(i);
         }
-        ArrayAdapter<String> semesterAdapter = new ArrayAdapter<>(getContext(),
-                android.R.layout.simple_spinner_item, semesters);
-        semesterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> semesterAdapter = new ArrayAdapter<>(getContext(), itemLayout, semesters);
         spinnerSemester.setAdapter(semesterAdapter);
 
         String[] roles = {"All", "admin", "moderator", "user"};
-        ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(getContext(),
-                android.R.layout.simple_spinner_item, roles);
-        roleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(getContext(), itemLayout, roles);
         spinnerRole.setAdapter(roleAdapter);
 
         String[] verifiedOptions = {"All", "Verified", "Not Verified"};
-        ArrayAdapter<String> verifiedAdapter = new ArrayAdapter<>(getContext(),
-                android.R.layout.simple_spinner_item, verifiedOptions);
-        verifiedAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> verifiedAdapter = new ArrayAdapter<>(getContext(), itemLayout, verifiedOptions);
         spinnerVerified.setAdapter(verifiedAdapter);
 
         AdapterView.OnItemSelectedListener filterListener = new AdapterView.OnItemSelectedListener() {
@@ -161,20 +157,11 @@ public class ADMUserListFragment extends Fragment {
                         fetchedUsers.add(user);
                     }
 
-                    Collections.sort(fetchedUsers, new Comparator<UserListModel>() {
-                        @Override
-                        public int compare(UserListModel u1, UserListModel u2) {
-                            if (u1.getLastLoggedIn() == null && u2.getLastLoggedIn() == null) {
-                                return 0;
-                            }
-                            if (u1.getLastLoggedIn() == null) {
-                                return 1;
-                            }
-                            if (u2.getLastLoggedIn() == null) {
-                                return -1;
-                            }
-                            return u2.getLastLoggedIn().compareTo(u1.getLastLoggedIn());
-                        }
+                    Collections.sort(fetchedUsers, (u1, u2) -> {
+                        if (u1.getLastLoggedIn() == null && u2.getLastLoggedIn() == null) return 0;
+                        if (u1.getLastLoggedIn() == null) return 1;
+                        if (u2.getLastLoggedIn() == null) return -1;
+                        return u2.getLastLoggedIn().compareTo(u1.getLastLoggedIn());
                     });
 
                     userList.clear();
@@ -182,13 +169,14 @@ public class ADMUserListFragment extends Fragment {
 
                     for (UserListModel user : fetchedUsers) {
                         boolean genderMatch = (genderFilter == null || (user.getGender() != null && user.getGender().equalsIgnoreCase(genderFilter)));
-                        boolean semesterMatch = (semesterFilter == null || (user.getSemester() != null && user.getSemester().equalsIgnoreCase(semesterFilter)));
-                        boolean roleMatch;
 
+                        boolean semesterMatch = (semesterFilter == null || (user.getSemester() != null && user.getSemester().equalsIgnoreCase(semesterFilter)));
+
+                        boolean roleMatch;
                         if (roleFilter == null) {
                             roleMatch = true;
                         } else if (roleFilter.equals("user")) {
-                            roleMatch = (user.getRole() == null || user.getRole().isBlank() || user.getRole().equalsIgnoreCase("user"));
+                            roleMatch = (user.getRole() == null || user.getRole().isEmpty() || user.getRole().equalsIgnoreCase("user"));
                         } else {
                             roleMatch = roleFilter.equalsIgnoreCase(user.getRole());
                         }
@@ -200,16 +188,19 @@ public class ADMUserListFragment extends Fragment {
                         }
 
                         if (genderMatch && semesterMatch && roleMatch && verifiedMatch) {
-                            userList.add(user);
                             allUsers.add(user);
                         }
                     }
+
+                    userList.addAll(allUsers);
                     userAdapter.notifyDataSetChanged();
                 });
     }
 
     private void filterBySearch(String query) {
+        if (query == null) query = "";
         query = query.toLowerCase();
+
         List<UserListModel> filteredList = new ArrayList<>();
 
         for (UserListModel user : allUsers) {

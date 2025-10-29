@@ -4,7 +4,7 @@ public class FacultyModel {
     private String name;
     private String designation;
     private String phone;
-    private String photoUrl; // <-- This variable name must match the Firestore field
+    private String photoUrl;
 
     public FacultyModel() {
     }

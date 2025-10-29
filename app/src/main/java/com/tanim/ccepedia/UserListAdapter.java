@@ -69,9 +69,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
             holder.tvLastLoggedIn.setText("Last Seen: Unavailable");
         }
 
-        holder.itemView.setOnClickListener(v -> {
-            showRoleChangeDialog(user);
-        });
+        holder.itemView.setOnClickListener(v -> showRoleChangeDialog(user));
     }
 
     @Override

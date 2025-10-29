@@ -83,7 +83,7 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        if (gender.equals("Select Gender") || gender.equals("") || gender.equals("Gender") || semester.equals("Semester") || semester.equals("Select Semester") || semester.equals("")) {
+        if (gender.equals("Select Gender") || gender.isEmpty() || gender.equals("Gender") || semester.equals("Semester") || semester.equals("Select Semester") || semester.isEmpty()) {
             showAlert("Please select both gender and semester");
             return;
         }

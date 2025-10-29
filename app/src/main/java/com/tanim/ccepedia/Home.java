@@ -22,6 +22,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.content.ContextCompat;
+
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -116,7 +119,7 @@ public class Home extends Fragment {
                     }
 
                     if (noticesList.isEmpty()) {
-                        noticesList.add(new Notice("No announcements at the moment.", null));
+                        noticesRecyclerView.setVisibility(View.GONE);
                     }
 
                     noticeAdapter.notifyDataSetChanged();
@@ -187,10 +190,11 @@ public class Home extends Fragment {
         List<QuickActionItem> quickActionList = new ArrayList<>();
 
         quickActionList.add(new QuickActionItem(UserData.getInstance().getSemester() + " Semester", R.drawable.ic_pdf, QuickActionItem.ACTION_RESOURCES));
+        quickActionList.add(new QuickActionItem("Bus Tracker", R.drawable.ic_tracker, QuickActionItem.ACTION_BUS_TRACKER));
+        quickActionList.add(new QuickActionItem("Student Portal", R.drawable.ic_stportal, QuickActionItem.ACTION_STUDENT_PORTAL));
         quickActionList.add(new QuickActionItem("Bus Schedule", R.drawable.ic_bus, QuickActionItem.ACTION_BUS_SCHEDULE));
         quickActionList.add(new QuickActionItem("CP in Java", R.drawable.ic_java, QuickActionItem.ACTION_JAVACP));
         quickActionList.add(new QuickActionItem("Java Resources", R.drawable.ic_java, QuickActionItem.ACTION_JAVARes));
-        quickActionList.add(new QuickActionItem("IIUC Website", R.drawable.ic_web, QuickActionItem.ACTION_IIUCWeb));
         quickActionList.add(new QuickActionItem("IIUC Repository", R.drawable.ic_repository, QuickActionItem.ACTION_IIUCRepo));
 
         QuickActionsAdapter quickActionsAdapter = new QuickActionsAdapter(quickActionList, this::handleQuickActionClick);
@@ -207,6 +211,14 @@ public class Home extends Fragment {
                 openCourseListFragment(semesterId);
                 break;
 
+            case QuickActionItem.ACTION_BUS_TRACKER:
+            openBusTracker();
+                break;
+
+            case QuickActionItem.ACTION_STUDENT_PORTAL:
+                openStudentPortal();
+                break;
+
             case QuickActionItem.ACTION_BUS_SCHEDULE:
                 openBusSchedule();
                 break;
@@ -219,16 +231,62 @@ public class Home extends Fragment {
                 openWebPage("https://github.com/tanim494/Java-Sessional-Resources");
                 break;
 
-            case QuickActionItem.ACTION_IIUCWeb:
-            openWebPage("https://www.iiuc.ac.bd/");
-                break;
-
             case QuickActionItem.ACTION_IIUCRepo:
-            openWebPage("https://dspace.iiuc.ac.bd/home");
+                openWebPage("https://dspace.iiuc.ac.bd/home");
                 break;
 
             default:
                 Log.w(TAG, "Unhandled quick action type: " + actionType);
+        }
+    }
+
+    private void openStudentPortal() {
+        StudentPortalFragment portalFragment = new StudentPortalFragment();
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.Midcontainer, portalFragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public static class QuickActionItem {
+        public static final int ACTION_RESOURCES = 1;
+        public static final int ACTION_BUS_TRACKER = 2;
+        public static final int ACTION_STUDENT_PORTAL = 3;
+        public static final int ACTION_BUS_SCHEDULE = 4;
+        public static final int ACTION_JAVACP = 5;
+        public static final int ACTION_JAVARes = 6;
+        public static final int ACTION_IIUCRepo = 7;
+
+        public final String title;
+        public final int iconResId;
+        public final int actionType;
+
+        public QuickActionItem(String title, int iconResId, int actionType) {
+            this.title = title;
+            this.iconResId = iconResId;
+            this.actionType = actionType;
+        }
+    }
+
+    private void openBusTracker() {
+        String url = "https://transport.iiuc.ac.bd/student/home";
+        openCustomTab(url);
+    }
+
+    private void openCustomTab(String url) {
+        if (getContext() == null) return;
+        try {
+            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+
+            builder.setToolbarColor(ContextCompat.getColor(getContext(), R.color.Green));
+
+            CustomTabsIntent customTabsIntent = builder.build();
+            customTabsIntent.launchUrl(requireContext(), Uri.parse(url));
+
+        } catch (Exception e) {
+            Log.e(TAG, "Custom Tabs failed, falling back to external browser.", e);
+            openWebPage(url);
         }
     }
 
@@ -336,25 +394,6 @@ public class Home extends Fragment {
                 super(itemView);
                 noticeText = itemView.findViewById(R.id.noticeContentTextView);
             }
-        }
-    }
-
-    public static class QuickActionItem {
-        public static final int ACTION_RESOURCES = 1;
-        public static final int ACTION_BUS_SCHEDULE = 2;
-        public static final int ACTION_JAVACP = 3;
-        public static final int ACTION_JAVARes = 4;
-        public static final int ACTION_IIUCWeb = 5;
-        public static final int ACTION_IIUCRepo = 6;
-
-        public final String title;
-        public final int iconResId;
-        public final int actionType;
-
-        public QuickActionItem(String title, int iconResId, int actionType) {
-            this.title = title;
-            this.iconResId = iconResId;
-            this.actionType = actionType;
         }
     }
 

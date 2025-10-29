@@ -5,7 +5,13 @@ public class Notice {
     private String text;
     private String link;
 
-    public Notice(String text, String link) { }
+    public Notice() {
+    }
+
+    public Notice(String text, String link) {
+        this.text = text;
+        this.link = link;
+    }
 
     public Notice(String id, String text, String link) {
         this.id = id;
@@ -17,7 +23,9 @@ public class Notice {
         return id;
     }
 
-    public void setId(String id) { this.id = id; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getText() {
         return text;
