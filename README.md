@@ -1,62 +1,99 @@
+# 📘 CCE Pedia
 
-# CCE Pedia
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 
-**CCE Pedia** is a mobile application designed to provide **students of the Computer and Communication Engineering (CCE)** department at **IIUC** (International Islamic University Chittagong) with easy access to academic resources such as lecture notes, previous exam papers, lab sheets, and other educational materials. The app aims to streamline the process of accessing department-specific information, enhancing the academic experience.
+**CCE Pedia** is a comprehensive study companion Android app built for IIUC Computer & Communication Engineering (CCE) students.
+It provides semester-wise and batch-wise access to lecture notes, lab resources, and question papers, all neatly organized in one place.
 
 ---
 
-## Features
+## ✨ Features
 
-* **Access Academic Resources**: Get access to previous exam papers, lab sheets, and lecture notes.
-* **Firebase Backend**: Uses Firebase for storage and database management.
-* **Material Design**: Provides a clean, user-friendly interface.
-* **Notifications**: Stay updated on important events and deadlines.
-
----
-
-## Installation
-
-### Prerequisites
-
-* **Android Studio**: Download and install [Android Studio](https://developer.android.com/studio).
-* **JDK 8 or above**: Make sure to have Java Development Kit version 8 or higher installed.
-
-### Steps to Run
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/tanim494/CCE-Pedia.git
-   ```
-
-2. Open the project in **Android Studio**.
-
-3. Build the project and run it on an emulator or a physical Android device.
-
-4. Set up Firebase:
-
-   * Go to [Firebase Console](https://console.firebase.google.com/), create a project, and add your Android app to the project.
-   * Download the `google-services.json` file and place it in the `app/` directory.
-
-5. Run the app!
+* 🔍 **Organized Resources** — all materials are categorized semester-wise and batch-wise.
+* ☁️ **Cloud-Based Access** — real-time data updates from Firebase Firestore.
+* 🔐 **Secure Login** — Firebase Authentication ensures safe user access.
+* 💬 **Community Chat** — an in-app discussion board where students can ask for help, share updates, and collaborate.
+* ⬇️ **Offline Downloads** — users can save resources to view later without an internet connection.
+* 📤 **Easy Sharing** — notes or files can be shared directly through WhatsApp, Messenger, or any installed app.
+* 🖼️ **Modern UI** — built with Material Design components and adaptive layouts.
+* 🧭 **Smooth Lists** — RecyclerView with efficient image loading powered by Glide.
 
 ---
 
-## Usage
+## 🧱 Tech Stack
 
-* Launch the app to access various academic resources such as previous questions and lab reports.
-* You can browse the list of available resources.
-* Push notifications will notify you about upcoming events or updates.
+| Component      | Technology                 |
+| -------------- | -------------------------- |
+| Language       | Java                       |
+| Backend        | Firebase Firestore         |
+| Authentication | Firebase Auth              |
+| Realtime Chat  | Firebase                   |
+| UI Library     | Material Components        |
+| Image Loading  | Glide                      |
+| List Rendering | RecyclerView               |
+| IDE            | Android Studio             |
 
 ---
 
-## Contributing
+## 👨‍💻 Developer’s Role
 
-If you'd like to contribute to **CCE Pedia**, feel free to fork the repository and submit a pull request with your changes. Make sure to follow the code style and include relevant comments in your code.
+Developed entirely by **Ahsanul Karim Tanim**, from UI/UX design to Firebase integration and deployment.
+Key contributions include:
+
+* Designing the database structure on Firebase.
+* Implementing authentication and user data protection.
+* Creating a custom resource management system for organized materials.
+* Developing the *Community Chat* module for peer discussions.
+* Integrating PDF viewing, offline downloads, and sharing options.
 
 ---
 
-## License
+## 📸 Screenshots
 
-This project is licensed under the Apache License Version 2.0 - see the [LICENSE](LICENSE) file for details.
+| Home                                          | Resources                                               | PDF View                              | Community Chat                                |
+| --------------------------------------------- | ------------------------------------------------------- | ------------------------------------- | --------------------------------------------- |
+| ![Home Screenshot](docs/screenshot/home.jpeg) | ![Resources Screenshot](docs/screenshot/resources.jpeg) | ![PDF View](docs/screenshot/pdf.jpeg) | ![Community Chat](docs/screenshot/chats.jpeg) |
+
+---
+
+## 🔗 Download APK
+
+👉 [**Download CCE Pedia APK**](https://cce-pedia.vercel.app/)
+
+---
+
+## 🚀 Future Roadmap
+
+* 🗂️ Add local SQLite caching for full offline mode.
+* 🌐 Integrate an AI chat for instant help.
+
+---
+
+## 👨‍💻 Developer
+
+**Ahsanul Karim Tanim**
+Android Developer • CCE Student at IIUC
+
+📧 Email: [Tanim494@gmail.com](mailto:Tanim494@gmail.com)
+🌐 [GitHub](https://github.com/tanim494)
+🔗 [LinkedIn](https://www.linkedin.com/in/tanim494/)
+
+---
+
+## 📝 License
+
+This project is licensed under the **Apache 2.0 License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## ⭐ About This Project
+
+CCE Pedia was developed to simplify academic resource sharing for IIUC CCE students.
+It demonstrates:
+
+* Full-stack app development (Java + Firebase)
+* Secure authentication and database structuring
+* Clean UI using Material Design
+* Real-time features and scalable backend integration
+
+> 🏆 This app is showcased as part of my Android development portfolio and reflects my ability to plan, build, and deploy complete solutions independently.
