@@ -30,7 +30,7 @@ public class AdminFragment extends Fragment {
         btnBusSchedule = view.findViewById(R.id.btnBusSchedule);
         btnAppConfig = view.findViewById(R.id.btnAppConfig);
 
-        btnUserList.setOnClickListener(v -> replaceFragment(new ADMUserListFragment()));
+        btnUserList.setOnClickListener(v -> replaceFragment(new AdminUserListFragment()));
         btnBatchLinks.setOnClickListener(v -> replaceFragment(new AdminBatchLinkFragment()));
         btnDriveLinks.setOnClickListener(v -> replaceFragment(new AdminDriveLinksFragment()));
         btnMessages.setOnClickListener(v -> replaceFragment(new ManageMessagesNoticesFragment()));

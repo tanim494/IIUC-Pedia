@@ -53,7 +53,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (url != null) {
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         } else {
-            intent = new Intent(this, HomeActivity.class);
+            intent = new Intent(this, MainActivity.class);
         }
 
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;

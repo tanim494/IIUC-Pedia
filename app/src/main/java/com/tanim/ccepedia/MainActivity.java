@@ -2,8 +2,10 @@ package com.tanim.ccepedia;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Spannable;
@@ -11,8 +13,11 @@ import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.Manifest;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -28,7 +33,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
 
-public class HomeActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigation;
 
     private TextView userNameTextView;
@@ -51,6 +56,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         checkForUpdate();
+        checkForNotificationPermission();
         FirebaseMessaging.getInstance().subscribeToTopic("notification");
 
         initializeViews();
@@ -64,9 +70,17 @@ public class HomeActivity extends AppCompatActivity {
             public void handleOnBackPressed() {
                 Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.Midcontainer);
 
+                if (currentFragment instanceof WebFragment) {
+                    WebFragment webFragment = (WebFragment) currentFragment;
+                    if (webFragment.canGoBack()) {
+                        webFragment.goBack();
+                        return;
+                    }
+                }
+
                 if (currentFragment instanceof Home || (getSupportFragmentManager().getBackStackEntryCount() == 0 && currentFragment == null)) {
 
-                    new MaterialAlertDialogBuilder(HomeActivity.this)
+                    new MaterialAlertDialogBuilder(MainActivity.this)
                             .setTitle("Exit CCEPedia?")
                             .setMessage("Are you sure you want to close the application?")
                             .setPositiveButton("Yes", (dialog, which) -> finish())
@@ -111,6 +125,19 @@ public class HomeActivity extends AppCompatActivity {
                         .show();
             }
         }, 2000);
+    }
+
+    private void checkForNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        101
+                );
+            }
+        }
     }
 
 
@@ -203,7 +230,7 @@ public class HomeActivity extends AppCompatActivity {
                     tran1.replace(R.id.Midcontainer, new Resources());
                     break;
                 case R.id.nv_author:
-                    tran1.replace(R.id.Midcontainer, new Author());
+                    tran1.replace(R.id.Midcontainer, new DeveloperFragment());
                     break;
             }
 

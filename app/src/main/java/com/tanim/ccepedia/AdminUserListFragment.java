@@ -20,10 +20,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-public class ADMUserListFragment extends Fragment {
+public class AdminUserListFragment extends Fragment {
 
     private Spinner spinnerGender, spinnerSemester, spinnerRole, spinnerVerified;
     private SearchView searchView;

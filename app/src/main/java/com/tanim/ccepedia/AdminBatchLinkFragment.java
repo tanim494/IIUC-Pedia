@@ -113,7 +113,8 @@ public class AdminBatchLinkFragment extends Fragment {
     }
 
     private void addBatchLink() {
-        String gender = spinnerGender.getSelectedItem().toString();
+        String gender = spinnerGender.getSelectedItem().toString().trim().toLowerCase();
+
         String title = editTitle.getText().toString().trim();
         String url = editUrl.getText().toString().trim();
 
@@ -139,7 +140,8 @@ public class AdminBatchLinkFragment extends Fragment {
     private void updateBatchLink() {
         if (selectedDocId == null) return;
 
-        String gender = spinnerGender.getSelectedItem().toString();
+        String gender = spinnerGender.getSelectedItem().toString().trim().toLowerCase();
+
         String title = editTitle.getText().toString().trim();
         String url = editUrl.getText().toString().trim();
 

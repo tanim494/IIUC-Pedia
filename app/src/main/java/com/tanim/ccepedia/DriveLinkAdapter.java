@@ -1,18 +1,15 @@
 package com.tanim.ccepedia;
 
-import android.content.Intent;
-import android.net.Uri;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.card.MaterialCardView;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,16 +69,26 @@ public class DriveLinkAdapter extends RecyclerView.Adapter<DriveLinkAdapter.View
         holder.title.setText(link.getTitle());
 
         holder.itemView.setOnClickListener(v -> {
+
             String url = link.getUrl();
-            if (url != null && !url.isEmpty()) {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    v.getContext().startActivity(intent);
-                } catch (Exception e) {
-                    Toast.makeText(v.getContext(), "Could not open link", Toast.LENGTH_SHORT).show();
-                }
-            } else {
+
+            if (url == null || url.isEmpty()) {
                 Toast.makeText(v.getContext(), "Link URL is missing", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Context context = v.getContext();
+            if (context instanceof AppCompatActivity) {
+
+                WebFragment webFragment = WebFragment.newInstance(url);
+
+                ((AppCompatActivity) context).getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.Midcontainer, webFragment)
+                        .addToBackStack(null)
+                        .commit();
+            } else {
+                Toast.makeText(context, "Cannot open link: Invalid Context", Toast.LENGTH_SHORT).show();
             }
         });
     }
