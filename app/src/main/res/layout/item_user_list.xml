@@ -97,16 +97,30 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Phone"
+                android:visibility="gone"
                 android:textColor="@color/black"
                 />
 
             <TextView
-                android:id="@+id/tvUserVerified"
+                android:id="@+id/tvUserDepartment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/Red"
-                android:text="Non Verified"
+                android:textColor="@color/Green"
+                android:text=""
+                android:textStyle="bold"
                 />
+
+            <TextView
+                android:id="@+id/tvViewCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Views: 0"
+                android:textSize="12sp"
+                android:textColor="@color/Green"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"
+                />
+
 
         </LinearLayout>
 

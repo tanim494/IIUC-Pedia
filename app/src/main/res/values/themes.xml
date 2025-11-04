@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.CCEPedia" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.IIUCPedia" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">#00695C</item>
         <item name="colorPrimaryVariant">#003E36</item>
         <item name="colorOnPrimary">@color/white</item>

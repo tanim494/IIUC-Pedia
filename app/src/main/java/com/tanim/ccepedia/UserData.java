@@ -3,6 +3,8 @@ package com.tanim.ccepedia;
 public class UserData {
     private static UserData instance;
     private String studentId, name, email, gender, phone, semester, role;
+    private String departmentName;
+    private long viewCount;
 
     private UserData() {}
 
@@ -62,5 +64,22 @@ public class UserData {
     }
 
     public void setRole(String role) {this.role = role;}
+
     public String getRole() {return role;}
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public long getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(long viewCount) {
+        this.viewCount = viewCount;
+    }
 }

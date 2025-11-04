@@ -112,8 +112,16 @@ public class CommunityChatAdapter extends RecyclerView.Adapter<CommunityChatAdap
         public void bind(CommunityMessage message) {
             messageText.setText(message.getMessageText());
 
+            android.text.util.Linkify.addLinks(messageText, android.text.util.Linkify.WEB_URLS);
+            messageText.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+
+            messageText.setLinkTextColor(android.graphics.Color.parseColor("#00BCD4"));
+
             if (senderName != null) {
-                senderName.setText(message.getUserName() + " - " + message.getUserStudentId());
+                String dept = message.getUserDepartment();
+                String deptDisplay = (dept != null && !dept.isEmpty()) ? " (" + dept + ")" : "";
+
+                senderName.setText(message.getUserName() + " - " + message.getUserStudentId() + deptDisplay);
             }
 
             Date timestamp = message.getTimestamp();

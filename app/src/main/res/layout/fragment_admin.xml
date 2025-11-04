@@ -29,14 +29,11 @@
         />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSendNotification"
+            android:id="@+id/importFaculty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/Green"
-            android:text="Send Notification"
-            android:layout_marginBottom="8dp"
-            android:textAllCaps="false"
-            android:textSize="16sp"
+            android:text="Import Faculty"
             />
 
 

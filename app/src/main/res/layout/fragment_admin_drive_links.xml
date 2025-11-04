@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
@@ -11,13 +12,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
+        android:padding="12dp"
+        android:hint="Department to Manage"
+        android:background="@drawable/rounded_search_background"
         >
+
+        <Spinner
+            android:id="@+id/spinnerDepartment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:popupBackground="@color/white"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:hint="Drive Link Title">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editDriveTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Drive Link Title"
             android:inputType="text"
             android:background="@color/white"
             />

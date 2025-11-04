@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment;
 
 public class AdminFragment extends Fragment {
 
-    private Button btnBatchLinks, btnDriveLinks, btnMessages, btnBusSchedule, btnAppConfig, btnUserList;
+    private Button btnBatchLinks, btnDriveLinks, btnMessages, btnBusSchedule, btnAppConfig, btnUserList, btnImport;
 
     @Nullable
     @Override
@@ -24,6 +24,7 @@ public class AdminFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_admin, container, false);
 
         btnUserList = view.findViewById(R.id.btnUserList);
+        btnImport = view.findViewById(R.id.importFaculty);
         btnBatchLinks = view.findViewById(R.id.btnBatchLinks);
         btnDriveLinks = view.findViewById(R.id.btnDriveLinks);
         btnMessages = view.findViewById(R.id.btnMessages);
@@ -31,8 +32,9 @@ public class AdminFragment extends Fragment {
         btnAppConfig = view.findViewById(R.id.btnAppConfig);
 
         btnUserList.setOnClickListener(v -> replaceFragment(new AdminUserListFragment()));
+        btnImport.setOnClickListener(v -> replaceFragment(new AdminFacultyImportFragment()));
         btnBatchLinks.setOnClickListener(v -> replaceFragment(new AdminBatchLinkFragment()));
-        btnDriveLinks.setOnClickListener(v -> replaceFragment(new AdminDriveLinksFragment()));
+        btnDriveLinks.setOnClickListener(v -> replaceFragment(new AdminLinksFragment()));
         btnMessages.setOnClickListener(v -> replaceFragment(new ManageMessagesNoticesFragment()));
         btnBusSchedule.setOnClickListener(v -> replaceFragment(new AdminBusFragment()));
         btnAppConfig.setOnClickListener(v -> replaceFragment(new AdminConfigFragment()));

@@ -33,6 +33,8 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -43,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UploadFile extends Fragment {
+public class UploadFileFragment extends Fragment {
 
     private Button btnPickFile, btnUpload;
     private EditText etFileName;
@@ -56,6 +58,7 @@ public class UploadFile extends Fragment {
 
     private FirebaseFirestore db;
     private FirebaseStorage storage;
+    private String deptCode;
 
     private ActivityResultLauncher<String> filePickerLauncher;
 
@@ -76,6 +79,8 @@ public class UploadFile extends Fragment {
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
 
+        deptCode = UserData.getInstance().getDepartmentName();
+
         btnUpload.setEnabled(false);
 
         setupSemesterSpinner();
@@ -86,13 +91,27 @@ public class UploadFile extends Fragment {
         return view;
     }
 
+    private DocumentReference getDepartmentRootRef() {
+        if (deptCode == null || deptCode.isEmpty()) {
+            Toast.makeText(getContext(), "Department not set for upload.", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+
+        if (deptCode.equalsIgnoreCase("CCE")) {
+            return db.collection("semesters").document("DUMMY");
+        } else {
+            String deptDocumentId = "dept_" + deptCode.toLowerCase();
+            return db.collection("departments").document(deptDocumentId);
+        }
+    }
+
     private void setupThank() {
         UserData user = UserData.getInstance();
         String name = user.getName();
         String studentId = user.getStudentId();
 
         String message = "Thank you, " + name + " (ID: " + studentId + ")" +
-                " for your valuable contribution to CCE Pedia. 🙏";
+                " for your valuable contribution to IIUC Pedia. 🙏";
 
         SpannableString spannable = new SpannableString(message);
 
@@ -116,17 +135,31 @@ public class UploadFile extends Fragment {
 
         spinnerCourse.setEnabled(false);
 
+        final DocumentReference deptRootRef = getDepartmentRootRef();
+        if (deptRootRef == null) return;
+
         spinnerSemester.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedSemester = "semester_" + semesters[position];
+                String selectedSemesterId = "semester_" + semesters[position];
                 spinnerCourse.setEnabled(false);
                 spinnerCourse.setAdapter(null);
                 checkUploadReadiness();
 
-                db.collection("semesters")
-                        .document(selectedSemester)
-                        .collection("courses")
+                CollectionReference coursesRef;
+
+                if (deptCode.equalsIgnoreCase("CCE")) {
+                    coursesRef = deptRootRef.getFirestore().collection("semesters")
+                            .document(selectedSemesterId)
+                            .collection("courses");
+                } else {
+                    coursesRef = deptRootRef.collection("semesters")
+                            .document(selectedSemesterId)
+                            .collection("courses");
+                }
+
+
+                coursesRef
                         .get()
                         .addOnSuccessListener(queryDocumentSnapshots -> {
                             List<String> courseList = new ArrayList<>();
@@ -225,21 +258,22 @@ public class UploadFile extends Fragment {
         btnUpload.setEnabled(fileSelected && fileNameValid && courseSelected);
     }
 
-    private void uploadFile(Uri fileUri, String fileName, String semester, String course) {
+    private void uploadFile(Uri fileUri, String fileName, String semesterId, String courseId) {
         progressBar.setVisibility(View.VISIBLE);
         btnUpload.setEnabled(false);
 
         String storageFileName = fileName;
+        String storageDept = UserData.getInstance().getDepartmentName();
 
         StorageReference storageRef = storage.getReference();
-        String filePath = semester + "/" + course + "/" + storageFileName;
+        String filePath = storageDept + "/" + semesterId + "/" + courseId + "/" + storageFileName;
         StorageReference fileRef = storageRef.child(filePath);
 
         fileRef.putFile(fileUri)
                 .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl()
                         .addOnSuccessListener(uri -> {
                             String downloadUrl = uri.toString();
-                            saveFileMetadata(fileName, downloadUrl, semester, course);
+                            saveFileMetadata(fileName, downloadUrl, semesterId, courseId);
                         }))
                 .addOnFailureListener(e -> {
                     Toast.makeText(requireContext(), "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -248,7 +282,7 @@ public class UploadFile extends Fragment {
                 });
     }
 
-    private void saveFileMetadata(String fileName, String downloadUrl, String semester, String course) {
+    private void saveFileMetadata(String fileName, String downloadUrl, String semesterId, String courseId) {
         Map<String, Object> fileData = new HashMap<>();
         fileData.put("fileName", fileName);
         fileData.put("url", downloadUrl);
@@ -266,11 +300,29 @@ public class UploadFile extends Fragment {
             }
         }
 
-        db.collection("semesters")
-                .document(semester)
-                .collection("courses")
-                .document(course)
-                .collection("files")
+        CollectionReference filesCollectionRef;
+        String currentDeptCode = UserData.getInstance().getDepartmentName();
+
+        if (currentDeptCode.equalsIgnoreCase("CCE")) {
+            filesCollectionRef = db.collection("semesters")
+                    .document(semesterId)
+                    .collection("courses")
+                    .document(courseId)
+                    .collection("files");
+        } else {
+            String deptDocumentId = "dept_" + currentDeptCode.toLowerCase();
+
+            filesCollectionRef = db.collection("departments")
+                    .document(deptDocumentId)
+                    .collection("semesters")
+                    .document(semesterId)
+                    .collection("courses")
+                    .document(courseId)
+                    .collection("files");
+        }
+
+
+        filesCollectionRef
                 .add(fileData)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(requireContext(), "File uploaded successfully", Toast.LENGTH_SHORT).show();

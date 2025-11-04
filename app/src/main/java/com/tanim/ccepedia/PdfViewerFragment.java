@@ -43,6 +43,9 @@ public class PdfViewerFragment extends Fragment {
 
     private Uri localPdfUri = null;
 
+    private final String APP_PREFIX = "IIUC_Pedia_";
+    private final String DOWNLOAD_FOLDER_NAME = "IIUC Pedia";
+
     public static PdfViewerFragment newInstance(String url, String fileName, String uploaderStudentId) {
         PdfViewerFragment fragment = new PdfViewerFragment();
         Bundle args = new Bundle();
@@ -112,7 +115,7 @@ public class PdfViewerFragment extends Fragment {
                     cleanFileName = cleanFileName.substring(0, cleanFileName.length() - 4);
                 }
 
-                prefixedFileName = "CCE_Pedia_" + cleanFileName;
+                prefixedFileName = APP_PREFIX + cleanFileName;
 
                 prefixedFileName = prefixedFileName.replace(" ", "_").replace("/", "_") + ".pdf";
 
@@ -160,7 +163,11 @@ public class PdfViewerFragment extends Fragment {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("application/pdf");
         shareIntent.putExtra(Intent.EXTRA_STREAM, localPdfUri);
+
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Shared Document: " + fileName);
+
+        String shareMessage = "Shared from IIUC Pedia\n" + fileName;
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
 
         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
@@ -217,18 +224,18 @@ public class PdfViewerFragment extends Fragment {
                 String fileNameToSave;
 
                 if (originalFileName == null || originalFileName.trim().isEmpty()) {
-                    fileNameToSave = "CCE_Pedia_" + System.currentTimeMillis() + extension;
+                    fileNameToSave = APP_PREFIX + System.currentTimeMillis() + extension;
                 } else if (!originalFileName.toLowerCase().endsWith(".pdf")) {
-                    fileNameToSave = originalFileName.replace(" ", "_") + extension;
+                    fileNameToSave = APP_PREFIX + originalFileName.replace(" ", "_") + extension;
                 } else {
-                    fileNameToSave = originalFileName.replace(" ", "_");
+                    fileNameToSave = APP_PREFIX + originalFileName.replace(" ", "_");
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     ContentValues values = new ContentValues();
                     values.put(MediaStore.Downloads.DISPLAY_NAME, fileNameToSave);
                     values.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
-                    values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/CCE Pedia/Resources");
+                    values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/" + DOWNLOAD_FOLDER_NAME + "/Resources");
 
                     Uri uri = requireContext().getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
 
@@ -240,16 +247,16 @@ public class PdfViewerFragment extends Fragment {
                                 output.write(buffer, 0, bytesRead);
                             }
                         }
-                        savedFilePath = "Downloads/CCE Pedia/Resources/" + fileNameToSave;
+                        savedFilePath = "Downloads/" + DOWNLOAD_FOLDER_NAME + "/Resources/" + fileNameToSave;
                         success = true;
                     }
 
                 } else {
                     File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                    File ccePediaFolder = new File(downloadsFolder, "CCE Pedia/Resources");
-                    if (!ccePediaFolder.exists()) ccePediaFolder.mkdirs();
+                    File appDownloadFolder = new File(downloadsFolder, DOWNLOAD_FOLDER_NAME + "/Resources");
+                    if (!appDownloadFolder.exists()) appDownloadFolder.mkdirs();
 
-                    File file = new File(ccePediaFolder, fileNameToSave);
+                    File file = new File(appDownloadFolder, fileNameToSave);
 
                     try (FileOutputStream output = new FileOutputStream(file)) {
                         byte[] buffer = new byte[4096];
@@ -261,7 +268,6 @@ public class PdfViewerFragment extends Fragment {
                     savedFilePath = file.getAbsolutePath();
                     success = true;
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
                 success = false;

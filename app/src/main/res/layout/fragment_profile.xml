@@ -65,6 +65,24 @@
                 android:paddingVertical="8dp" />
 
             <TextView
+                android:id="@+id/departmentText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Department: CCE"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:paddingVertical="8dp" />
+
+            <TextView
+                android:id="@+id/semesterText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Semester: 6th"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:paddingVertical="8dp" />
+
+            <TextView
                 android:id="@+id/emailText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -78,15 +96,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Phone: 01xxxxxxxxx"
-                android:textSize="18sp"
-                android:textColor="#333333"
-                android:paddingVertical="8dp" />
-
-            <TextView
-                android:id="@+id/semesterText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Semester: 6th"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:paddingVertical="8dp" />
@@ -184,6 +193,37 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:background="@null"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/departmentInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Department"
+            android:textColorHint="@color/black"
+            app:startIconDrawable="@drawable/ic_department"
+            app:boxStrokeColor="@color/Green"
+            app:boxBackgroundColor="@android:color/white"
+            app:boxCornerRadiusTopStart="8dp"
+            app:boxCornerRadiusTopEnd="8dp"
+            app:boxCornerRadiusBottomStart="8dp"
+            app:boxCornerRadiusBottomEnd="8dp"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp"
+            android:visibility="gone">
+
+            <AutoCompleteTextView
+                android:id="@+id/departmentEdit"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:inputType="none"
+                android:textSize="16sp"
+                android:background="@null"
+                android:contentDescription="Department Selection"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout

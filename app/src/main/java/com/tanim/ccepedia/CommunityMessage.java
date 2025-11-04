@@ -9,15 +9,9 @@ public class CommunityMessage {
     private String userName;
     private String messageText;
     private Date timestamp;
+    private String userDepartment;
 
     public CommunityMessage() {
-    }
-
-    public CommunityMessage(String userStudentId, String userEmail, String userName, String messageText) {
-        this.userStudentId = userStudentId;
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.messageText = messageText;
     }
 
     public String getUserEmail() {
@@ -55,4 +49,12 @@ public class CommunityMessage {
     }
 
     public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
+
+    public String getUserDepartment() {
+        return userDepartment;
+    }
+
+    public void setUserDepartment(String userDepartment) {
+        this.userDepartment = userDepartment;
+    }
 }

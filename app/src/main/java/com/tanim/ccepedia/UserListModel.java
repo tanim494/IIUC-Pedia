@@ -14,6 +14,8 @@ public class UserListModel {
     private String role;
     private boolean verified;
     private Date lastLoggedIn;
+    private String departmentName;
+    private long viewCount;
 
     public UserListModel() {
     }
@@ -51,4 +53,12 @@ public class UserListModel {
     public void setLastLoggedIn(Date lastLoggedIn) {
         this.lastLoggedIn = lastLoggedIn;
     }
+
+    @PropertyName("department")
+    public String getDepartmentName() { return departmentName; }
+    @PropertyName("department")
+    public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
+
+    public long getViewCount() { return viewCount; }
+    public void setViewCount(long viewCount) { this.viewCount = viewCount; }
 }

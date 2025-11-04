@@ -138,7 +138,7 @@
                     android:id="@+id/openFacebookPage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="CCE Club Facebook"
+                    android:text=""
                     android:textSize="18sp"
                     android:textColor="@color/black" />
             </LinearLayout>
@@ -161,7 +161,7 @@
                     android:id="@+id/openFacebookFemPage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="CCE Club Female Chapter Facebook"
+                    android:text=""
                     android:textSize="18sp"
                     android:textColor="@color/black" />
             </LinearLayout>

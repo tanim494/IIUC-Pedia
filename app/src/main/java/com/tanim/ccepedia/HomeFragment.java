@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -33,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Home extends Fragment {
+public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
 
@@ -42,6 +45,7 @@ public class Home extends Fragment {
     private RecyclerView noticesRecyclerView;
     private RecyclerView quickActionsRecyclerView;
     private RecyclerView latestUpdatesRecyclerView;
+    private ImageView homeBannerImage;
 
     private NoticeAdapter noticeAdapter;
     private LatestUpdatesAdapter latestUpdatesAdapter;
@@ -66,6 +70,10 @@ public class Home extends Fragment {
         noticesRecyclerView = view.findViewById(R.id.noticesRecyclerView);
         quickActionsRecyclerView = view.findViewById(R.id.quickActionsRecyclerView);
         latestUpdatesRecyclerView = view.findViewById(R.id.latestUpdatesRecyclerView);
+        homeBannerImage = view.findViewById(R.id.homeBannerImage);
+
+        Animation pulse = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse);
+        communityBtn.startAnimation(pulse);
 
         db = FirebaseFirestore.getInstance();
 
@@ -77,10 +85,42 @@ public class Home extends Fragment {
 
         loadAllNotices();
         loadLatestUpdates();
-
+        loadDynamicBanner();
         setUserData();
 
         return view;
+    }
+
+    private void loadDynamicBanner() {
+        db.collection("appConfig").document("main").get()
+                .addOnSuccessListener(doc -> {
+                    if (doc != null && doc.exists()) {
+                        String imageUrl = doc.getString("homeBannerUrl");
+                        String clickUrl = doc.getString("homeBannerClickUrl");
+
+                        if (imageUrl != null && !imageUrl.isEmpty()) {
+                            if (getContext() != null) {
+                                Glide.with(getContext())
+                                        .load(imageUrl)
+                                        .into(homeBannerImage);
+                                homeBannerImage.setVisibility(View.VISIBLE);
+                                Animation pulse = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse);
+                                homeBannerImage.startAnimation(pulse);
+
+                                if (clickUrl != null && !clickUrl.isEmpty()) {
+                                    homeBannerImage.setOnClickListener(v -> openWebPage(clickUrl));
+                                }
+                            }
+                        } else {
+                            homeBannerImage.setVisibility(View.GONE);
+                        }
+                    } else {
+                        homeBannerImage.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    homeBannerImage.setVisibility(View.GONE);
+                });
     }
 
     private void setupInteractiveTools() {
@@ -178,9 +218,7 @@ public class Home extends Fragment {
 
     private void handleNoticeClick(String link) {
         if (link != null && !link.isEmpty()) {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(link));
-            startActivity(intent);
+            openWebPage(link);
         } else {
             Toast.makeText(getContext(), "No external link available for this notice.", Toast.LENGTH_SHORT).show();
         }
@@ -188,13 +226,19 @@ public class Home extends Fragment {
 
     private void setupQuickActions() {
         List<QuickActionItem> quickActionList = new ArrayList<>();
+        String semesterDisplay = UserData.getInstance().getSemester();
 
-        quickActionList.add(new QuickActionItem(UserData.getInstance().getSemester() + " Semester", R.drawable.ic_pdf, QuickActionItem.ACTION_RESOURCES));
+        if (semesterDisplay.equalsIgnoreCase("Outgoing")) {
+            semesterDisplay = "8th Semester (Outgoing)";
+        } else {
+            semesterDisplay = semesterDisplay + " Semester";
+        }
+
+        quickActionList.add(new QuickActionItem(semesterDisplay, R.drawable.ic_pdf, QuickActionItem.ACTION_RESOURCES));
         quickActionList.add(new QuickActionItem("Bus Tracker", R.drawable.ic_tracker, QuickActionItem.ACTION_BUS_TRACKER));
         quickActionList.add(new QuickActionItem("Student Portal", R.drawable.ic_stportal, QuickActionItem.ACTION_STUDENT_PORTAL));
         quickActionList.add(new QuickActionItem("Bus Schedule", R.drawable.ic_bus, QuickActionItem.ACTION_BUS_SCHEDULE));
         quickActionList.add(new QuickActionItem("CP in Java", R.drawable.ic_java, QuickActionItem.ACTION_JAVACP));
-        quickActionList.add(new QuickActionItem("Java Resources", R.drawable.ic_java, QuickActionItem.ACTION_JAVARes));
         quickActionList.add(new QuickActionItem("IIUC Repository", R.drawable.ic_repository, QuickActionItem.ACTION_IIUCRepo));
 
         QuickActionsAdapter quickActionsAdapter = new QuickActionsAdapter(quickActionList, this::handleQuickActionClick);
@@ -204,15 +248,21 @@ public class Home extends Fragment {
 
     private void handleQuickActionClick(int actionType, String actionTitle) {
         String currentSemester = UserData.getInstance().getSemester();
+        String semesterId;
+
+        if (currentSemester.equalsIgnoreCase("Outgoing")) {
+            semesterId = "semester_8";
+        } else {
+            semesterId = "semester_" + currentSemester;
+        }
 
         switch (actionType) {
             case QuickActionItem.ACTION_RESOURCES:
-                String semesterId = "semester_" + currentSemester;
                 openCourseListFragment(semesterId);
                 break;
 
             case QuickActionItem.ACTION_BUS_TRACKER:
-            openBusTracker();
+                openBusTracker();
                 break;
 
             case QuickActionItem.ACTION_STUDENT_PORTAL:
@@ -224,20 +274,24 @@ public class Home extends Fragment {
                 break;
 
             case QuickActionItem.ACTION_JAVACP:
-                openWebPage("https://github.com/tanim494/CodeForces");
-                break;
-
-            case QuickActionItem.ACTION_JAVARes:
-                openWebPage("https://github.com/tanim494/Java-Sessional-Resources");
+                openWebFragment("https://github.com/tanim494/CodeForces");
                 break;
 
             case QuickActionItem.ACTION_IIUCRepo:
-                openWebPage("https://dspace.iiuc.ac.bd/home");
+                openWebFragment("https://dspace.iiuc.ac.bd/home");
                 break;
 
             default:
                 Log.w(TAG, "Unhandled quick action type: " + actionType);
         }
+    }
+
+    private void openWebFragment(String url) {
+        WebFragment fragment = WebFragment.newInstance(url);
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.Midcontainer, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void openStudentPortal() {
@@ -255,8 +309,7 @@ public class Home extends Fragment {
         public static final int ACTION_STUDENT_PORTAL = 3;
         public static final int ACTION_BUS_SCHEDULE = 4;
         public static final int ACTION_JAVACP = 5;
-        public static final int ACTION_JAVARes = 6;
-        public static final int ACTION_IIUCRepo = 7;
+        public static final int ACTION_IIUCRepo = 6;
 
         public final String title;
         public final int iconResId;
@@ -316,7 +369,7 @@ public class Home extends Fragment {
     }
 
     private void openFileUpload() {
-        UploadFile uploadFragment = new UploadFile();
+        UploadFileFragment uploadFragment = new UploadFileFragment();
         getParentFragmentManager().beginTransaction()
                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                 .replace(R.id.Midcontainer, uploadFragment)
@@ -350,7 +403,6 @@ public class Home extends Fragment {
     }
 
     public static class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.ViewHolder> {
-
         private final List<Notice> items;
         private final NoticeClickListener listener;
 
@@ -398,7 +450,6 @@ public class Home extends Fragment {
     }
 
     public static class QuickActionsAdapter extends RecyclerView.Adapter<QuickActionsAdapter.ViewHolder> {
-
         private final List<QuickActionItem> items;
         private final QuickActionClickListener listener;
 
@@ -481,5 +532,4 @@ public class Home extends Fragment {
             }
         }
     }
-
 }

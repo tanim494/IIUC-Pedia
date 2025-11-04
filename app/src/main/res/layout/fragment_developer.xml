@@ -40,37 +40,24 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="The Developer &amp; App Info"
+                    android:text="The Developer &amp; File Uploaders"
                     android:textSize="14sp"
                     android:textColor="?android:attr/textColorSecondary"
                     android:layout_marginTop="2dp"/>
             </LinearLayout>
 
-            <include layout="@layout/item_developer_card"/>
+            <include layout="@layout/item_developer_profile"/>
+
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Contact Information"
+                android:text="File Uploaders"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"
                 android:layout_marginBottom="8dp"
-                android:layout_marginTop="16dp"/>
-
-            <include layout="@layout/item_developer_address"/>
-
-            <include layout="@layout/item_developer_email"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Moderators"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:layout_marginBottom="8dp"
-                android:layout_marginTop="24dp"/>
+                android:layout_marginTop="14dp"/>
 
             <LinearLayout
                 android:id="@+id/moderatorListContainer"

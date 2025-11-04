@@ -5,12 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -26,6 +28,7 @@ public class BatchWiseFragment extends Fragment {
     private List<DriveLink> linkList;
     private List<DriveLink> fullLinkList;
     private androidx.appcompat.widget.SearchView searchView;
+    private TextView emptyStateTextView;
 
     public static BatchWiseFragment newInstance(String gender) {
         BatchWiseFragment fragment = new BatchWiseFragment();
@@ -51,6 +54,7 @@ public class BatchWiseFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         searchView = view.findViewById(R.id.searchViewBatchResources);
+        emptyStateTextView = view.findViewById(R.id.emptyStateBatchText);
 
         linkList = new ArrayList<>();
         fullLinkList = new ArrayList<>();
@@ -84,7 +88,30 @@ public class BatchWiseFragment extends Fragment {
 
     private void fetchBatchWiseLinks() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("batch_wise_links")
+
+        String deptCode = UserData.getInstance().getDepartmentName();
+
+        if (deptCode == null || deptCode.isEmpty()) {
+            Toast.makeText(getContext(), "Department not set.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CollectionReference collectionRef;
+
+        if (deptCode.equalsIgnoreCase("CCE")) {
+            collectionRef = db.collection("batch_wise_links");
+        } else {
+            String deptDocumentId = "dept_" + deptCode.toLowerCase();
+
+            collectionRef = db.collection("departments")
+                    .document(deptDocumentId)
+                    .collection("batch_wise_links");
+        }
+
+        emptyStateTextView.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.VISIBLE);
+
+        collectionRef
                 .whereEqualTo("gender", gender)
                 .get()
                 .addOnSuccessListener(querySnapshots -> {
@@ -100,9 +127,21 @@ public class BatchWiseFragment extends Fragment {
                     linkList.addAll(fullLinkList);
                     adapter.setFullList(fullLinkList);
                     adapter.notifyDataSetChanged();
+
+                    if (fullLinkList.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyStateTextView.setText("No batch resources found for the " + deptCode + " department.");
+                        emptyStateTextView.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyStateTextView.setVisibility(View.GONE);
+                    }
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Failed to load batch wise links", Toast.LENGTH_SHORT).show()
-                );
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to load batch wise links for " + deptCode, Toast.LENGTH_SHORT).show();
+                    recyclerView.setVisibility(View.GONE);
+                    emptyStateTextView.setText("Failed to connect to resources for " + deptCode + ".");
+                    emptyStateTextView.setVisibility(View.VISIBLE);
+                });
     }
 }

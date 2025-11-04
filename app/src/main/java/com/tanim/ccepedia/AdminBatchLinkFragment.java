@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,23 +16,29 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AdminBatchLinkFragment extends Fragment {
 
     private Spinner spinnerGender;
+    private Spinner spinnerDepartment;
     private EditText editTitle, editUrl;
     private Button btnAdd, btnUpdate, btnDelete;
     private ListView listViewLinks;
 
     private FirebaseFirestore db;
+    private DepartmentRepository departmentRepository;
     private ArrayList<BatchLink> batchLinks = new ArrayList<>();
     private ArrayAdapter<String> listAdapter;
+    private List<String> departmentIdList = new ArrayList<>();
 
     private String selectedDocId = null;
 
@@ -43,6 +50,7 @@ public class AdminBatchLinkFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_admin_batch_link, container, false);
 
         spinnerGender = view.findViewById(R.id.spinnerGender);
+        spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
         editTitle = view.findViewById(R.id.editTitle);
         editUrl = view.findViewById(R.id.editUrl);
         btnAdd = view.findViewById(R.id.btnAdd);
@@ -55,13 +63,23 @@ public class AdminBatchLinkFragment extends Fragment {
         spinnerGender.setAdapter(spinnerAdapter);
 
         db = FirebaseFirestore.getInstance();
+        departmentRepository = new DepartmentRepository();
 
-        loadBatchLinks();
+        loadDepartmentSpinner();
+
+        spinnerDepartment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                loadBatchLinks();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
         btnAdd.setOnClickListener(v -> addBatchLink());
-
         btnUpdate.setOnClickListener(v -> updateBatchLink());
-
         btnDelete.setOnClickListener(v -> deleteBatchLink());
 
         listViewLinks.setOnItemClickListener((parent, view1, position, id) -> {
@@ -87,8 +105,64 @@ public class AdminBatchLinkFragment extends Fragment {
         return view;
     }
 
+    private void loadDepartmentSpinner() {
+        departmentRepository.fetchAllDepartmentIds()
+                .addOnSuccessListener(ids -> {
+                    departmentIdList = ids;
+                    List<String> displayNames = ids.stream()
+                            .map(id -> id.replace("dept_", "").toUpperCase())
+                            .collect(Collectors.toList());
+
+                    displayNames.add(0, "Select Department");
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                            getContext(),
+                            android.R.layout.simple_spinner_item,
+                            displayNames
+                    );
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinnerDepartment.setAdapter(adapter);
+
+                    if(displayNames.contains("CCE")) {
+                        spinnerDepartment.setSelection(displayNames.indexOf("CCE"));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to load departments.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private CollectionReference getCollectionRef() {
+        String selectedDeptCode = spinnerDepartment.getSelectedItem() != null ? spinnerDepartment.getSelectedItem().toString() : "";
+
+        if (selectedDeptCode.equals("Select Department") || selectedDeptCode.isEmpty()) {
+            Toast.makeText(getContext(), "Please select a department.", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+
+        CollectionReference collectionRef;
+
+        if (selectedDeptCode.equalsIgnoreCase("CCE")) {
+            collectionRef = db.collection("batch_wise_links");
+        } else {
+            String deptDocumentId = "dept_" + selectedDeptCode.toLowerCase();
+
+            collectionRef = db.collection("departments")
+                    .document(deptDocumentId)
+                    .collection("batch_wise_links");
+        }
+        return collectionRef;
+    }
+
     private void loadBatchLinks() {
-        db.collection("batch_wise_links")
+        CollectionReference collectionRef = getCollectionRef();
+        if (collectionRef == null) {
+            batchLinks.clear();
+            if(listAdapter != null) listAdapter.notifyDataSetChanged();
+            return;
+        }
+
+        collectionRef
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     batchLinks.clear();
@@ -113,8 +187,10 @@ public class AdminBatchLinkFragment extends Fragment {
     }
 
     private void addBatchLink() {
-        String gender = spinnerGender.getSelectedItem().toString().trim().toLowerCase();
+        CollectionReference collectionRef = getCollectionRef();
+        if (collectionRef == null) return;
 
+        String gender = spinnerGender.getSelectedItem().toString().trim().toLowerCase();
         String title = editTitle.getText().toString().trim();
         String url = editUrl.getText().toString().trim();
 
@@ -128,7 +204,7 @@ public class AdminBatchLinkFragment extends Fragment {
         data.put("title", title);
         data.put("url", url);
 
-        db.collection("batch_wise_links")
+        collectionRef
                 .add(data)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(getContext(), "Link added", Toast.LENGTH_SHORT).show();
@@ -140,8 +216,10 @@ public class AdminBatchLinkFragment extends Fragment {
     private void updateBatchLink() {
         if (selectedDocId == null) return;
 
-        String gender = spinnerGender.getSelectedItem().toString().trim().toLowerCase();
+        CollectionReference collectionRef = getCollectionRef();
+        if (collectionRef == null) return;
 
+        String gender = spinnerGender.getSelectedItem().toString().trim().toLowerCase();
         String title = editTitle.getText().toString().trim();
         String url = editUrl.getText().toString().trim();
 
@@ -155,7 +233,7 @@ public class AdminBatchLinkFragment extends Fragment {
         data.put("title", title);
         data.put("url", url);
 
-        db.collection("batch_wise_links")
+        collectionRef
                 .document(selectedDocId)
                 .set(data)
                 .addOnSuccessListener(aVoid -> {
@@ -168,7 +246,10 @@ public class AdminBatchLinkFragment extends Fragment {
     private void deleteBatchLink() {
         if (selectedDocId == null) return;
 
-        db.collection("batch_wise_links")
+        CollectionReference collectionRef = getCollectionRef();
+        if (collectionRef == null) return;
+
+        collectionRef
                 .document(selectedDocId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {

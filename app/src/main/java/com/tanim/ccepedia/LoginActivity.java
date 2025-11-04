@@ -113,6 +113,17 @@ public class LoginActivity extends AppCompatActivity {
                 user.setRole(role);
             }
 
+            Long viewCount = snapshot.getLong("viewCount");
+            user.setViewCount(viewCount != null ? viewCount : 0);
+
+            String departmentName = snapshot.getString("department");
+
+            if (departmentName == null || departmentName.isEmpty()) {
+                departmentName = "CCE";
+            }
+
+            user.setDepartmentName(departmentName);
+
             updateLastLoggedIn();
 
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -134,15 +145,10 @@ public class LoginActivity extends AppCompatActivity {
 
                                 db.collection("users")
                                         .document(uid)
-                                        .update("verified", true)
-                                        .addOnSuccessListener(aVoid -> db.collection("users")
-                                                .document(uid)
-                                                .get()
-                                                .addOnSuccessListener(this::handleUserDocument)
-                                                .addOnFailureListener(e ->
-                                                        showAlert("Failed to fetch user data")))
+                                        .get()
+                                        .addOnSuccessListener(this::handleUserDocument)
                                         .addOnFailureListener(e ->
-                                                Toast.makeText(LoginActivity.this, "Failed to update verification status", Toast.LENGTH_SHORT).show());
+                                                showAlert("Failed to fetch user data"));
 
                             } else {
                                 user.sendEmailVerification()

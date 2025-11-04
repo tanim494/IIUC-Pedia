@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,8 +17,11 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-public class Resources extends Fragment {
+import java.util.Map;
+
+public class ResourcesFragment extends Fragment {
 
     private MaterialCardView cardFacebookPage;
     private MaterialCardView cardFacebookFemPage;
@@ -25,10 +30,17 @@ public class Resources extends Fragment {
     private MaterialCardView cardBusPage;
     private MaterialCardView cardDriveLinks;
 
+    private TextView textFacebookPage;
+    private TextView textFacebookFemPage;
+
+    private FirebaseFirestore db;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_resources, container, false);
+
+        db = FirebaseFirestore.getInstance();
 
         cardFacebookPage = rootView.findViewById(R.id.cardFacebookPage);
         cardFacebookFemPage = rootView.findViewById(R.id.cardFacebookFemPage);
@@ -37,19 +49,62 @@ public class Resources extends Fragment {
         cardBusPage = rootView.findViewById(R.id.cardBusPage);
         cardDriveLinks = rootView.findViewById(R.id.cardDriveLinks);
 
-        cardFacebookPage.setOnClickListener(v -> openWebPage("https://www.facebook.com/profile.php?id=100090282199663"));
+        textFacebookPage = rootView.findViewById(R.id.openFacebookPage);
+        textFacebookFemPage = rootView.findViewById(R.id.openFacebookFemPage);
 
-        cardFacebookFemPage.setOnClickListener(v -> openWebPage("https://www.facebook.com/profile.php?id=100091710725410"));
-
-        cardBatchWise.setOnClickListener(v -> showGenderDialog());
-
-        cardBusPage.setOnClickListener(v -> openFragment(new BusScheduleFragment()));
-
-        cardSemesterResourcesPage.setOnClickListener(v -> openFragment(new SemesterResources()));
-
-        cardDriveLinks.setOnClickListener(v -> openFragment(new DriveLinksFragment()));
+        setupStaticListeners();
+        fetchDynamicLinks();
 
         return rootView;
+    }
+
+    private void setupStaticListeners() {
+        cardBatchWise.setOnClickListener(v -> showGenderDialog());
+        cardBusPage.setOnClickListener(v -> openFragment(new BusScheduleFragment()));
+        cardSemesterResourcesPage.setOnClickListener(v -> openFragment(new SemesterResources()));
+        cardDriveLinks.setOnClickListener(v -> openFragment(new DriveLinksFragment()));
+    }
+
+    private void fetchDynamicLinks() {
+        db.collection("appConfig").document("main")
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc != null && doc.exists()) {
+
+                        Map<String, String> fbClubData = (Map<String, String>) doc.get("club_link_male");
+                        Map<String, String> fbFemaleData = (Map<String, String>) doc.get("club_link_female");
+
+                        setupLinkButton(cardFacebookPage, textFacebookPage, fbClubData);
+                        setupLinkButton(cardFacebookFemPage, textFacebookFemPage, fbFemaleData);
+
+                    } else {
+                        Toast.makeText(getContext(), "Failed to load external links.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to load external links.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void setupLinkButton(MaterialCardView button, TextView textView, Map<String, String> data) {
+        if (data != null && data.containsKey("title") && data.containsKey("url")) {
+            String title = data.get("title");
+            String url = data.get("url");
+
+            textView.setText(title);
+            button.setOnClickListener(v -> openWebPage(url));
+        } else {
+            button.setOnClickListener(v -> Toast.makeText(getContext(), "Link not available.", Toast.LENGTH_SHORT).show());
+        }
+    }
+
+    private void openWebPage(String url) {
+        if (url == null || url.isEmpty()) {
+            Toast.makeText(getContext(), "Link not available.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(intent);
     }
 
     private void openFragment(Fragment fragment) {
@@ -77,10 +132,5 @@ public class Resources extends Fragment {
         fragmentTransaction.replace(R.id.Midcontainer, BatchWiseFragment.newInstance(gender));
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-    }
-
-    private void openWebPage(String url) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(intent);
     }
 }

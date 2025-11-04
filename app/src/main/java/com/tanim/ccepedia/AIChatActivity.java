@@ -16,7 +16,7 @@ public class AIChatActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("CCE Pedia AI");
+            getSupportActionBar().setTitle("IIUC Pedia AI");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }

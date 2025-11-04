@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -28,9 +29,11 @@ public class FileListFragment extends Fragment {
 
     private static final String ARG_SEMESTER_ID = "semesterId";
     private static final String ARG_COURSE_ID = "courseId";
+    private static final String ARG_DEPT_CODE = "deptCode";
 
     private String semesterId;
     private String courseId;
+    private String deptCode;
 
     private FirebaseFirestore db;
     private RecyclerView recyclerView;
@@ -39,11 +42,12 @@ public class FileListFragment extends Fragment {
     private SearchView searchView;
     private TextView emptyStateText;
 
-    public static FileListFragment newInstance(String semesterId, String courseId) {
+    public static FileListFragment newInstance(String semesterId, String courseId, String deptCode) {
         FileListFragment fragment = new FileListFragment();
         Bundle args = new Bundle();
         args.putString(ARG_SEMESTER_ID, semesterId);
         args.putString(ARG_COURSE_ID, courseId);
+        args.putString(ARG_DEPT_CODE, deptCode);
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,6 +58,7 @@ public class FileListFragment extends Fragment {
         if (getArguments() != null) {
             semesterId = getArguments().getString(ARG_SEMESTER_ID);
             courseId = getArguments().getString(ARG_COURSE_ID);
+            deptCode = getArguments().getString(ARG_DEPT_CODE);
         }
         db = FirebaseFirestore.getInstance();
     }
@@ -121,20 +126,56 @@ public class FileListFragment extends Fragment {
         });
     }
 
+    private CollectionReference getFilesCollectionRef() {
+        if (deptCode == null || deptCode.isEmpty()) {
+            Toast.makeText(getContext(), "Department not set.", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+
+        if (deptCode.equalsIgnoreCase("CCE")) {
+            return db.collection("semesters")
+                    .document(semesterId)
+                    .collection("courses")
+                    .document(courseId)
+                    .collection("files");
+        } else {
+            String deptDocumentId = "dept_" + deptCode.toLowerCase();
+
+            return db.collection("departments")
+                    .document(deptDocumentId)
+                    .collection("semesters")
+                    .document(semesterId)
+                    .collection("courses")
+                    .document(courseId)
+                    .collection("files");
+        }
+    }
+
+
     private void fetchFiles() {
+        CollectionReference filesCollectionRef = getFilesCollectionRef();
+
+        if (filesCollectionRef == null) {
+            loadingSpinner.setVisibility(View.GONE);
+            emptyStateText.setText("Failed to load files: Department ID missing.");
+            emptyStateText.setVisibility(View.VISIBLE);
+            return;
+        }
+
         loadingSpinner.setVisibility(View.VISIBLE);
-        db.collection("semesters")
-                .document(semesterId)
-                .collection("courses")
-                .document(courseId)
-                .collection("files")
+        emptyStateText.setVisibility(View.GONE);
+
+        filesCollectionRef
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     loadingSpinner.setVisibility(View.GONE);
                     if (queryDocumentSnapshots.isEmpty()) {
+                        emptyStateText.setText("No files found for this course in " + deptCode + ".");
                         emptyStateText.setVisibility(View.VISIBLE);
+                        recyclerView.setVisibility(View.GONE);
                         return;
                     }
+                    recyclerView.setVisibility(View.VISIBLE);
 
                     List<FileItem> fetchedList = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
@@ -153,22 +194,29 @@ public class FileListFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> {
                     loadingSpinner.setVisibility(View.GONE);
+                    emptyStateText.setText("Error connecting to database. Please check your network.");
                     emptyStateText.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
                 });
     }
 
     private void deleteFile(FileItem item) {
+        CollectionReference filesCollectionRef = getFilesCollectionRef();
+
+        if (filesCollectionRef == null) {
+            Toast.makeText(requireContext(), "Cannot delete: Department ID missing.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         Toast.makeText(requireContext(), "Deleting file...", Toast.LENGTH_SHORT).show();
 
+        String storageDept = UserData.getInstance().getDepartmentName();
+
         StorageReference fileRef = FirebaseStorage.getInstance().getReference()
-                .child(semesterId + "/" + courseId + "/" + item.getFileName());
+                .child(storageDept + "/" + semesterId + "/" + courseId + "/" + item.getFileName());
 
         fileRef.delete()
-                .addOnSuccessListener(aVoid -> db.collection("semesters")
-                        .document(semesterId)
-                        .collection("courses")
-                        .document(courseId)
-                        .collection("files")
+                .addOnSuccessListener(aVoid -> filesCollectionRef
                         .document(item.getId())
                         .delete()
                         .addOnSuccessListener(aVoid1 -> {
@@ -178,6 +226,6 @@ public class FileListFragment extends Fragment {
                         .addOnFailureListener(e ->
                                 Toast.makeText(requireContext(), "Failed to delete metadata: " + e.getMessage(), Toast.LENGTH_SHORT).show()))
                 .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed to delete file: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        Toast.makeText(requireContext(), "Failed to delete file: object does not exist at location. Check path.", Toast.LENGTH_SHORT).show());
     }
 }

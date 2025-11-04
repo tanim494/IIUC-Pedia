@@ -14,22 +14,46 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FacultyAdapter extends RecyclerView.Adapter<FacultyAdapter.FacultyViewHolder> {
 
     private final Context context;
     private final List<FacultyModel> facultyList;
+    private final List<FacultyModel> fullFacultyList;
 
     public FacultyAdapter(Context context, List<FacultyModel> facultyList) {
         this.context = context;
         this.facultyList = facultyList;
+        this.fullFacultyList = new ArrayList<>();
+    }
+
+    public void setFullList(List<FacultyModel> fullList) {
+        this.fullFacultyList.clear();
+        this.fullFacultyList.addAll(fullList);
+    }
+
+    public void filterList(String query) {
+        String lowerCaseQuery = query.toLowerCase();
+        facultyList.clear();
+
+        if (lowerCaseQuery.isEmpty()) {
+            facultyList.addAll(fullFacultyList);
+        } else {
+            for (FacultyModel faculty : fullFacultyList) {
+                if (faculty.getName() != null && faculty.getName().toLowerCase().contains(lowerCaseQuery)) {
+                    facultyList.add(faculty);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public FacultyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.faculty_item, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_faculty, parent, false);
         return new FacultyViewHolder(view);
     }
 
@@ -52,7 +76,10 @@ public class FacultyAdapter extends RecyclerView.Adapter<FacultyAdapter.FacultyV
 
         holder.itemView.setOnClickListener(v -> {
             if (faculty.getPhone() != null && !faculty.getPhone().isEmpty()) {
-                Toast.makeText(context,"Calling " + faculty.getName() + " Sir", Toast.LENGTH_SHORT).show();
+                String facultyFullName = faculty.getName();
+
+                Toast.makeText(context, "Calling " + facultyFullName + " Sir...", Toast.LENGTH_SHORT).show();
+
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 intent.setData(Uri.parse("tel:" + faculty.getPhone()));
                 context.startActivity(intent);

@@ -19,7 +19,7 @@ import com.google.firebase.firestore.SetOptions;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Loading extends AppCompatActivity {
+public class LoadingActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
@@ -100,9 +100,24 @@ public class Loading extends AppCompatActivity {
             String role = snapshot.getString("role");
             user.setRole(role != null ? role : "");
 
+            Long viewCount = snapshot.getLong("viewCount");
+            user.setViewCount(viewCount != null ? viewCount : 0);
+
+            String departmentCode = snapshot.getString("department");
+
+            if (departmentCode == null || departmentCode.isEmpty()) {
+                departmentCode = "CCE";
+            }
+
+            user.setDepartmentName(departmentCode);
+
             updateLastLoggedIn();
 
-            goToHome();
+            if (departmentCode.equalsIgnoreCase("CCE")) {
+                goToHome();
+            } else {
+                goToHome();
+            }
         } else {
             FirebaseAuth.getInstance().signOut();
             Toast.makeText(this, "Profile data not found. Please login.", Toast.LENGTH_SHORT).show();

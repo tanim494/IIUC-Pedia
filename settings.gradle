@@ -13,5 +13,5 @@ dependencyResolutionManagement {
         maven { url 'https://jitpack.io' }
     }
 }
-rootProject.name = "CCE Pedia"
+rootProject.name = "IIUC Pedia"
 include ':app'

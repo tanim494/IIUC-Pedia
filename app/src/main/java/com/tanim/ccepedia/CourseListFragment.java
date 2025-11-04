@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -28,6 +30,7 @@ public class CourseListFragment extends Fragment implements CourseAdapter.OnCour
     private RecyclerView recyclerView;
     private CourseAdapter adapter;
     private SearchView searchView;
+    private TextView emptyStateTextView; // 🌟 NEW FIELD
 
     public static CourseListFragment newInstance(String semesterId) {
         CourseListFragment fragment = new CourseListFragment();
@@ -55,6 +58,7 @@ public class CourseListFragment extends Fragment implements CourseAdapter.OnCour
 
         recyclerView = view.findViewById(R.id.courseRecyclerView);
         searchView = view.findViewById(R.id.searchViewCourses);
+        emptyStateTextView = view.findViewById(R.id.emptyStateCoursesText); // 🌟 INITIALIZE TEXTVIEW
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new CourseAdapter(new ArrayList<>(), this);
@@ -82,15 +86,36 @@ public class CourseListFragment extends Fragment implements CourseAdapter.OnCour
     }
 
     private void fetchCourses() {
-        db.collection("semesters")
-                .document(semesterId)
-                .collection("courses")
+        String deptCode = UserData.getInstance().getDepartmentName();
+
+        if (deptCode == null || deptCode.isEmpty()) {
+            Toast.makeText(getContext(), "Department not set.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CollectionReference collectionRef;
+
+        if (deptCode.equalsIgnoreCase("CCE")) {
+            collectionRef = db.collection("semesters")
+                    .document(semesterId)
+                    .collection("courses");
+        } else {
+            String deptDocumentId = "dept_" + deptCode.toLowerCase();
+
+            collectionRef = db.collection("departments")
+                    .document(deptDocumentId)
+                    .collection("semesters")
+                    .document(semesterId)
+                    .collection("courses");
+        }
+
+        emptyStateTextView.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.GONE);
+
+
+        collectionRef
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(requireContext(), "No courses found", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
                     List<Course> newCourseList = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         String id = doc.getId();
@@ -99,9 +124,21 @@ public class CourseListFragment extends Fragment implements CourseAdapter.OnCour
 
                         newCourseList.add(new Course(id, title));
                     }
+
                     adapter.updateData(newCourseList);
+
+                    if (newCourseList.isEmpty()) {
+                        emptyStateTextView.setText("No courses found for " + deptCode + " in this semester.");
+                        emptyStateTextView.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                    }
                 })
-                .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to load courses: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    emptyStateTextView.setText("Failed to connect and load courses for " + deptCode + ".");
+                    emptyStateTextView.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                });
     }
 
     @Override
@@ -110,7 +147,9 @@ public class CourseListFragment extends Fragment implements CourseAdapter.OnCour
     }
 
     private void openFileListFragment(String courseId) {
-        FileListFragment fragment = FileListFragment.newInstance(semesterId, courseId);
+        String deptCode = UserData.getInstance().getDepartmentName();
+
+        FileListFragment fragment = FileListFragment.newInstance(semesterId, courseId, deptCode);
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.Midcontainer, fragment)
                 .addToBackStack(null)

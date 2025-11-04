@@ -8,6 +8,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import androidx.appcompat.widget.SearchView;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,17 +23,20 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AdminUserListFragment extends Fragment {
 
-    private Spinner spinnerGender, spinnerSemester, spinnerRole, spinnerVerified;
+    private Spinner spinnerGender, spinnerSemester, spinnerRole, spinnerDepartment;
     private SearchView searchView;
     private RecyclerView recyclerViewUsers;
     private UserListAdapter userAdapter;
     private List<UserListModel> userList;
     private List<UserListModel> allUsers;
+    private TextView tvUserCount;
 
     private FirebaseFirestore db;
+    private DepartmentRepository departmentRepository;
 
     @Nullable
     @Override
@@ -42,16 +47,17 @@ public class AdminUserListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_user_list, container, false);
 
         db = FirebaseFirestore.getInstance();
+        departmentRepository = new DepartmentRepository();
 
         spinnerGender = view.findViewById(R.id.spinnerGender);
         spinnerSemester = view.findViewById(R.id.spinnerSemester);
         spinnerRole = view.findViewById(R.id.spinnerRole);
-        spinnerVerified = view.findViewById(R.id.spinnerVerified);
+        spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
         searchView = view.findViewById(R.id.searchView);
+        tvUserCount = view.findViewById(R.id.tvUserCount);
+        recyclerViewUsers = view.findViewById(R.id.recyclerViewUsers);
 
         searchView.setIconified(false);
-
-        recyclerViewUsers = view.findViewById(R.id.recyclerViewUsers);
 
         userList = new ArrayList<>();
         allUsers = new ArrayList<>();
@@ -88,11 +94,13 @@ public class AdminUserListFragment extends Fragment {
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(getContext(), itemLayout, genders);
         spinnerGender.setAdapter(genderAdapter);
 
-        String[] semesters = new String[9];
+        String[] semesters = new String[10];
         semesters[0] = "All";
         for (int i = 1; i <= 8; i++) {
             semesters[i] = String.valueOf(i);
         }
+        semesters[9] = "Outgoing";
+
         ArrayAdapter<String> semesterAdapter = new ArrayAdapter<>(getContext(), itemLayout, semesters);
         spinnerSemester.setAdapter(semesterAdapter);
 
@@ -100,9 +108,7 @@ public class AdminUserListFragment extends Fragment {
         ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(getContext(), itemLayout, roles);
         spinnerRole.setAdapter(roleAdapter);
 
-        String[] verifiedOptions = {"All", "Verified", "Not Verified"};
-        ArrayAdapter<String> verifiedAdapter = new ArrayAdapter<>(getContext(), itemLayout, verifiedOptions);
-        spinnerVerified.setAdapter(verifiedAdapter);
+        loadDepartmentOptions(itemLayout);
 
         AdapterView.OnItemSelectedListener filterListener = new AdapterView.OnItemSelectedListener() {
             @Override
@@ -117,33 +123,51 @@ public class AdminUserListFragment extends Fragment {
         spinnerGender.setOnItemSelectedListener(filterListener);
         spinnerSemester.setOnItemSelectedListener(filterListener);
         spinnerRole.setOnItemSelectedListener(filterListener);
-        spinnerVerified.setOnItemSelectedListener(filterListener);
+        spinnerDepartment.setOnItemSelectedListener(filterListener);
+    }
+
+    private void loadDepartmentOptions(int itemLayout) {
+        departmentRepository.fetchAllDepartmentIds()
+                .addOnSuccessListener(ids -> {
+                    List<String> deptCodes = ids.stream()
+                            .map(id -> id.replace("dept_", "").toUpperCase())
+                            .collect(Collectors.toList());
+
+                    deptCodes.add(0, "All");
+
+                    ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(getContext(), itemLayout, deptCodes);
+                    spinnerDepartment.setAdapter(departmentAdapter);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Error loading department filters.", Toast.LENGTH_SHORT).show();
+                    ArrayAdapter<String> fallbackAdapter = new ArrayAdapter<>(getContext(), itemLayout, new String[]{"All"});
+                    spinnerDepartment.setAdapter(fallbackAdapter);
+                });
     }
 
     private void applyFiltersAndSearch() {
-        String gender = spinnerGender.getSelectedItem().toString();
-        if (gender.equals("All")) gender = null;
+        Object genderSelection = spinnerGender.getSelectedItem();
+        String gender = (genderSelection != null) ? genderSelection.toString() : null;
+        if ("All".equals(gender)) gender = null;
 
-        String semester = spinnerSemester.getSelectedItem().toString();
-        if (semester.equals("All")) semester = null;
+        Object semesterSelection = spinnerSemester.getSelectedItem();
+        String semester = (semesterSelection != null) ? semesterSelection.toString() : null;
+        if ("All".equals(semester)) semester = null;
 
-        String role = spinnerRole.getSelectedItem().toString();
-        if (role.equals("All")) role = null;
+        Object roleSelection = spinnerRole.getSelectedItem();
+        String role = (roleSelection != null) ? roleSelection.toString() : null;
+        if ("All".equals(role)) role = null;
 
-        String verifiedString = spinnerVerified.getSelectedItem().toString();
-        Boolean verifiedFilter = null;
-        if (verifiedString.equals("Verified")) {
-            verifiedFilter = true;
-        } else if (verifiedString.equals("Not Verified")) {
-            verifiedFilter = false;
-        }
+        Object departmentSelection = spinnerDepartment.getSelectedItem();
+        String departmentFilter = (departmentSelection != null) ? departmentSelection.toString() : null;
+        if ("All".equals(departmentFilter)) departmentFilter = null;
 
-        loadUsers(gender, semester, role, verifiedFilter);
+        loadUsers(gender, semester, role, departmentFilter);
 
         filterBySearch(searchView.getQuery().toString());
     }
 
-    private void loadUsers(String genderFilter, String semesterFilter, String roleFilter, Boolean verifiedFilter) {
+    private void loadUsers(String genderFilter, String semesterFilter, String roleFilter, String departmentFilter) {
 
         db.collection("users")
                 .get()
@@ -180,19 +204,18 @@ public class AdminUserListFragment extends Fragment {
                             roleMatch = roleFilter.equalsIgnoreCase(user.getRole());
                         }
 
-                        boolean verifiedMatch = true;
-                        if (verifiedFilter != null) {
-                            Boolean userVerified = user.isVerified();
-                            verifiedMatch = userVerified.equals(verifiedFilter);
-                        }
+                        boolean departmentMatch = (departmentFilter == null ||
+                                (user.getDepartmentName() != null && user.getDepartmentName().equalsIgnoreCase(departmentFilter)));
 
-                        if (genderMatch && semesterMatch && roleMatch && verifiedMatch) {
+
+                        if (genderMatch && semesterMatch && roleMatch && departmentMatch) {
                             allUsers.add(user);
                         }
                     }
 
                     userList.addAll(allUsers);
                     userAdapter.notifyDataSetChanged();
+                    updateUserCount();
                 });
     }
 
@@ -212,5 +235,12 @@ public class AdminUserListFragment extends Fragment {
         userList.clear();
         userList.addAll(filteredList);
         userAdapter.notifyDataSetChanged();
+        updateUserCount();
+    }
+
+    private void updateUserCount() {
+        int count = userList.size();
+        String countText = count + " user(s)";
+        tvUserCount.setText(countText);
     }
 }

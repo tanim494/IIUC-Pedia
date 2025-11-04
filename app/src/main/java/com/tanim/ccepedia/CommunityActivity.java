@@ -10,14 +10,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.annotation.NonNull;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.tanim.ccepedia.CommunityChatAdapter.MessageInteractionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +35,7 @@ public class CommunityActivity extends AppCompatActivity implements MessageInter
     private RecyclerView recyclerView;
     private CommunityChatAdapter chatAdapter;
     private final List<CommunityMessage> messageList = new ArrayList<>();
+    private LinearLayoutManager layoutManager;
 
     private EditText messageEditText;
     private FloatingActionButton sendButton;
@@ -38,6 +43,11 @@ public class CommunityActivity extends AppCompatActivity implements MessageInter
     private final String currentUserEmail = UserData.getInstance().getEmail();
     private final String currentStudentId = UserData.getInstance().getStudentId();
     private final String currentUserName = UserData.getInstance().getName();
+    private final String currentUserDepartment = UserData.getInstance().getDepartmentName();
+
+    private boolean isLoading = false;
+    private boolean moreMessagesAvailable = true;
+    private DocumentSnapshot oldestMessageSnapshot = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +68,7 @@ public class CommunityActivity extends AppCompatActivity implements MessageInter
         messageEditText = findViewById(R.id.communityMessageEditText);
         sendButton = findViewById(R.id.communitySendButton);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(layoutManager);
 
@@ -77,6 +87,19 @@ public class CommunityActivity extends AppCompatActivity implements MessageInter
             return false;
         });
 
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (layoutManager.findFirstCompletelyVisibleItemPosition() == 0 && dy < 0) {
+                    if (!isLoading && moreMessagesAvailable) {
+                        loadMoreMessages();
+                    }
+                }
+            }
+        });
+
         loadMessages();
     }
 
@@ -87,13 +110,10 @@ public class CommunityActivity extends AppCompatActivity implements MessageInter
 
     private boolean canCurrentUserDelete(CommunityMessage message) {
         if (UserData.getInstance() == null) return false;
-
         String currentUserRole = UserData.getInstance().getRole();
-
         if ("admin".equals(currentUserRole)) {
             return true;
         }
-
         return currentStudentId != null && currentStudentId.equalsIgnoreCase(message.getUserStudentId());
     }
 
@@ -134,23 +154,65 @@ public class CommunityActivity extends AppCompatActivity implements MessageInter
     }
 
     private void loadMessages() {
-        chatRef.orderBy("timestamp", Query.Direction.ASCENDING)
-                .limitToLast(50)
+        isLoading = true;
+        chatRef.orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(50)
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
                         Log.w(TAG, "Listen failed.", e);
+                        isLoading = false;
                         return;
                     }
 
-                    if (snapshots != null) {
-                        messageList.clear();
+                    if (snapshots != null && !snapshots.isEmpty()) {
+                        oldestMessageSnapshot = snapshots.getDocuments().get(snapshots.size() - 1);
+
+                        List<CommunityMessage> newMessages = new ArrayList<>();
                         for (CommunityMessage message : snapshots.toObjects(CommunityMessage.class)) {
-                            messageList.add(message);
+                            newMessages.add(message);
                         }
+                        Collections.reverse(newMessages);
+
+                        messageList.clear();
+                        messageList.addAll(newMessages);
 
                         chatAdapter.notifyDataSetChanged();
                         recyclerView.scrollToPosition(messageList.size() - 1);
                     }
+                    isLoading = false;
+                    moreMessagesAvailable = snapshots.size() >= 50;
+                });
+    }
+
+    private void loadMoreMessages() {
+        if (oldestMessageSnapshot == null) return;
+
+        isLoading = true;
+        moreMessagesAvailable = false;
+
+        chatRef.orderBy("timestamp", Query.Direction.DESCENDING)
+                .startAfter(oldestMessageSnapshot)
+                .limit(50)
+                .get()
+                .addOnSuccessListener(snapshots -> {
+                    if (snapshots != null && !snapshots.isEmpty()) {
+                        oldestMessageSnapshot = snapshots.getDocuments().get(snapshots.size() - 1);
+
+                        List<CommunityMessage> olderMessages = new ArrayList<>();
+                        for (CommunityMessage message : snapshots.toObjects(CommunityMessage.class)) {
+                            olderMessages.add(message);
+                        }
+                        Collections.reverse(olderMessages);
+
+                        messageList.addAll(0, olderMessages);
+                        chatAdapter.notifyItemRangeInserted(0, olderMessages.size());
+
+                    }
+                    isLoading = false;
+                })
+                .addOnFailureListener(e -> {
+                    isLoading = false;
+                    Toast.makeText(this, "Failed to load older messages.", Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -166,6 +228,7 @@ public class CommunityActivity extends AppCompatActivity implements MessageInter
         message.put("userStudentId", currentStudentId);
         message.put("userEmail", currentUserEmail);
         message.put("userName", currentUserName);
+        message.put("userDepartment", currentUserDepartment);
         message.put("messageText", messageText);
         message.put("timestamp", FieldValue.serverTimestamp());
 

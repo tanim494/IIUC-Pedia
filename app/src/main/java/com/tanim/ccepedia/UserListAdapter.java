@@ -52,13 +52,14 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
         }
         holder.tvRole.setText("Role: " + role.toUpperCase(Locale.ROOT));
 
-        if (user.isVerified()) {
-            holder.tvUserVerified.setText("Verified");
-            holder.tvUserVerified.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark));
+        String dept = user.getDepartmentName();
+        if (dept == null || dept.isEmpty()) {
+            dept = "N/A";
+            holder.tvUserDepartment.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray));
         } else {
-            holder.tvUserVerified.setText("Non Verified");
-            holder.tvUserVerified.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark));
+            holder.tvUserDepartment.setTextColor(ContextCompat.getColor(context, R.color.Green));
         }
+        holder.tvUserDepartment.setText("Dept: " + dept);
 
         Date lastLoggedIn = user.getLastLoggedIn();
         if (lastLoggedIn != null) {
@@ -68,6 +69,8 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
         } else {
             holder.tvLastLoggedIn.setText("Last Seen: Unavailable");
         }
+
+        holder.tvViewCount.setText("Views: " + user.getViewCount());
 
         holder.itemView.setOnClickListener(v -> showRoleChangeDialog(user));
     }
@@ -125,7 +128,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
     }
 
     public static class UserViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvStudentId, tvEmail, tvPhone, tvSemester, tvGender, tvRole, tvUserVerified, tvLastLoggedIn;
+        TextView tvName, tvStudentId, tvEmail, tvPhone, tvSemester, tvGender, tvRole, tvUserDepartment, tvLastLoggedIn, tvViewCount;
 
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -136,8 +139,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
             tvSemester = itemView.findViewById(R.id.tvSemester);
             tvGender = itemView.findViewById(R.id.tvGender);
             tvRole = itemView.findViewById(R.id.tvRole);
-            tvUserVerified = itemView.findViewById(R.id.tvUserVerified);
+            tvUserDepartment = itemView.findViewById(R.id.tvUserDepartment);
             tvLastLoggedIn = itemView.findViewById(R.id.tvLastLoggedIn);
+            tvViewCount = itemView.findViewById(R.id.tvViewCount);
         }
     }
 }

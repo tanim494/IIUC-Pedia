@@ -15,14 +15,21 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.widget.AutoCompleteTextView;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private TextInputEditText nameEditText, idEditText, phoneEditText, emailEditText, passwordEditText;
     private AutoCompleteTextView genderAutoComplete, semesterAutoComplete;
+    private AutoCompleteTextView departmentAutoComplete;
     private Button registerButton;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private DepartmentRepository departmentRepository;
+    private List<String> departmentIdList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +38,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        departmentRepository = new DepartmentRepository();
 
         nameEditText = findViewById(R.id.nameEditText);
         idEditText = findViewById(R.id.idEditText);
@@ -40,14 +48,17 @@ public class RegisterActivity extends AppCompatActivity {
 
         genderAutoComplete = findViewById(R.id.genderSpinner);
         semesterAutoComplete = findViewById(R.id.semesterSpinner);
+        departmentAutoComplete = findViewById(R.id.departmentSpinner);
 
         registerButton = findViewById(R.id.registerButton);
 
-        String[] semesters = new String[9];
+        String[] semesters = new String[10];
         semesters[0] = "Select Semester";
         for (int i = 1; i <= 8; i++) {
             semesters[i] = String.valueOf(i);
         }
+        semesters[9] = "Outgoing";
+
         ArrayAdapter<String> semesterAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, semesters);
         semesterAutoComplete.setAdapter(semesterAdapter);
 
@@ -55,23 +66,65 @@ public class RegisterActivity extends AppCompatActivity {
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, genders);
         genderAutoComplete.setAdapter(genderAdapter);
 
+        loadDepartmentSpinner();
+
         registerButton.setOnClickListener(v -> registerUser());
     }
 
+    private void loadDepartmentSpinner() {
+        departmentRepository.fetchAllDepartmentIds()
+                .addOnSuccessListener(ids -> {
+                    departmentIdList.add("Select Department");
+                    departmentIdList.addAll(ids);
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                            this,
+                            R.layout.dropdown_item,
+                            departmentIdList
+                    );
+                    departmentAutoComplete.setAdapter(adapter);
+
+                    departmentAutoComplete.setText("Select Department", false);
+                })
+                .addOnFailureListener(e -> {
+                    showAlert("Error loading departments. Check network.");
+                    registerButton.setEnabled(false);
+                });
+    }
+
+    private boolean isValidStudentId(String id) {
+        if (id == null) return false;
+        String idPattern = "^[a-zA-Z]{1,3}[0-9]{5,8}$";
+        Pattern pattern = Pattern.compile(idPattern);
+        Matcher matcher = pattern.matcher(id);
+        return matcher.matches();
+    }
+
     private void registerUser() {
-        String name = nameEditText.getText().toString().trim();
-        String id = idEditText.getText().toString().trim();
-        String phone = phoneEditText.getText().toString().trim();
-        String email = emailEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
+        final String name = nameEditText.getText().toString().trim();
+        final String rawId = idEditText.getText().toString().trim();
+        final String phone = phoneEditText.getText().toString().trim();
+        final String email = emailEditText.getText().toString().trim();
+        final String password = passwordEditText.getText().toString().trim();
 
-        String gender = genderAutoComplete.getText().toString();
-        String semester = semesterAutoComplete.getText().toString();
+        final String gender = genderAutoComplete.getText().toString();
+        final String semester = semesterAutoComplete.getText().toString();
+        final String departmentId = departmentAutoComplete.getText().toString();
 
-        if (name.isEmpty() || id.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            showAlert("Please fill in all fields");
+
+        if (name.isEmpty() || rawId.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty()) {
+            showAlert("Please fill in all required fields");
             return;
         }
+
+        String sanitizedId = rawId.replaceAll("[^a-zA-Z0-9]", "");
+
+        if (!isValidStudentId(sanitizedId)) {
+            showAlert("Invalid Student ID. Insert your correct student ID (e.g., E221013 or C221013).");
+            return;
+        }
+
+        final String finalId = sanitizedId.toUpperCase();
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             showAlert("Invalid email format");
@@ -83,12 +136,23 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        if (gender.equals("Select Gender") || gender.isEmpty() || gender.equals("Gender") || semester.equals("Semester") || semester.equals("Select Semester") || semester.isEmpty()) {
-            showAlert("Please select both gender and semester");
+        if (gender.equals("Select Gender") || gender.isEmpty() || semester.equals("Select Semester") || semester.isEmpty() || departmentId.equals("Select Department") || departmentId.isEmpty()) {
+            showAlert("Please select Gender, Semester, and Department.");
+            return;
+        }
+
+        String tempDeptCode = departmentId.replace("Select Department", "").trim();
+        final String finalDeptCode;
+
+        if (!tempDeptCode.isEmpty()) {
+            finalDeptCode = tempDeptCode.replace("dept_", "").toUpperCase();
+        } else {
+            showAlert("Please select a valid Department.");
             return;
         }
 
         registerButton.setEnabled(false);
+
 
         mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -105,7 +169,7 @@ public class RegisterActivity extends AppCompatActivity {
                                         user.sendEmailVerification()
                                                 .addOnCompleteListener(emailTask -> {
                                                     if (emailTask.isSuccessful()) {
-                                                        User newUser = new User(name, id, phone, email, gender, semester);
+                                                        User newUser = new User(name, finalId, phone, email, gender, semester, finalDeptCode);
                                                         db.collection("users")
                                                                 .document(user.getUid())
                                                                 .set(newUser)
@@ -156,19 +220,19 @@ public class RegisterActivity extends AppCompatActivity {
         private String email;
         private String gender;
         private String semester;
-        private boolean verified;
+        private String department;
 
         public User() {
         }
 
-        public User(String name, String id, String phone, String email, String gender, String semester) {
+        public User(String name, String id, String phone, String email, String gender, String semester, String department) {
             this.name = name;
             this.id = id;
             this.phone = phone;
             this.email = email;
             this.gender = gender;
             this.semester = semester;
-            this.verified = false;
+            this.department = department;
         }
 
         public String getName() { return name; }
@@ -189,8 +253,9 @@ public class RegisterActivity extends AppCompatActivity {
         public String getSemester() { return semester; }
         public void setSemester(String semester) { this.semester = semester; }
 
-        public boolean isVerified() { return verified; }
-        public void setVerified(boolean verified) { this.verified = verified; }
+
+        public String getDepartment() { return department; }
+        public void setDepartment(String department) { this.department = department; }
 
     }
 }

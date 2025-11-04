@@ -11,11 +11,11 @@ import android.os.Handler;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.Manifest;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView userNameTextView;
     private TextView userId;
-    private ImageView profileImage;
+    private ConstraintLayout profileHeader;
 
     String updateLink;
     float databaseVersion;
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_main);
 
         checkForUpdate();
         checkForNotificationPermission();
@@ -78,10 +78,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                if (currentFragment instanceof Home || (getSupportFragmentManager().getBackStackEntryCount() == 0 && currentFragment == null)) {
+                if (currentFragment instanceof HomeFragment || (getSupportFragmentManager().getBackStackEntryCount() == 0 && currentFragment == null)) {
 
                     new MaterialAlertDialogBuilder(MainActivity.this)
-                            .setTitle("Exit CCEPedia?")
+                            .setTitle("Exit IIUC Pedia?")
                             .setMessage("Are you sure you want to close the application?")
                             .setPositiveButton("Yes", (dialog, which) -> finish())
                             .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                             android.R.anim.fade_out,
                             android.R.anim.fade_in,
                             android.R.anim.fade_out);
-                    tran.replace(R.id.Midcontainer, new Home());
+                    tran.replace(R.id.Midcontainer, new HomeFragment());
                     tran.commit();
                 }
             }
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
                 new MaterialAlertDialogBuilder(this)
                         .setTitle(title)
-                        .setMessage("A new version of CCEPedia is ready to download. Update now to get the latest features and improvements.")
+                        .setMessage("A new version of IIUC Pedia is ready to download. Update now to get the latest features and improvements.")
                         .setCancelable(false)
                         .setPositiveButton("Update", (dialog, which) -> {
                             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(updateLink));
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
     private void initializeViews() {
         userNameTextView = findViewById(R.id.userNameTextView);
         userId = findViewById(R.id.userId);
-        profileImage = findViewById(R.id.profileImage);
+        profileHeader = findViewById(R.id.customHeader);
 
         bottomNavigation = findViewById(R.id.bottomNavigation);
     }
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
         UserData user = UserData.getInstance();
 
         userNameTextView.setText(user.getName());
-        userId.setText(user.getStudentId() + ", " + user.getSemester() + " Semester");
+        userId.setText(user.getStudentId() + ", " + user.getDepartmentName() + " (" + user.getSemester() + " Semester)");
         userRole = user.getRole();
     }
 
@@ -181,8 +181,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-
-        profileImage.setOnClickListener(view -> openProfileFragment());
+        profileHeader.setOnClickListener(view -> openProfileFragment());
     }
 
     @SuppressLint("SetTextI18n")
@@ -207,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 android.R.anim.fade_out,
                 android.R.anim.fade_in,
                 android.R.anim.fade_out);
-        tran.replace(R.id.Midcontainer, new Home());
+        tran.replace(R.id.Midcontainer, new HomeFragment());
         tran.commit();
 
 
@@ -221,13 +220,13 @@ public class MainActivity extends AppCompatActivity {
 
             switch (item.getItemId()) {
                 case R.id.nv_home:
-                    tran1.replace(R.id.Midcontainer, new Home());
+                    tran1.replace(R.id.Midcontainer, new HomeFragment());
                     break;
                 case R.id.nv_faculty:
-                    tran1.replace(R.id.Midcontainer, new Faculty());
+                    tran1.replace(R.id.Midcontainer, new FacultyFragment());
                     break;
                 case R.id.nv_resource:
-                    tran1.replace(R.id.Midcontainer, new Resources());
+                    tran1.replace(R.id.Midcontainer, new ResourcesFragment());
                     break;
                 case R.id.nv_author:
                     tran1.replace(R.id.Midcontainer, new DeveloperFragment());

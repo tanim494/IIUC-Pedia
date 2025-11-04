@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -11,7 +12,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:padding="12dp"
+        android:padding="5dp"
+        android:hint="Department"
+        android:background="@drawable/rounded_search_background"
+        >
+
+        <Spinner
+            android:id="@+id/spinnerDepartment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:popupBackground="@color/white"
+            android:paddingHorizontal="12dp"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:padding="5dp"
         android:hint="Gender"
         android:background="@drawable/rounded_search_background"
         >
@@ -22,6 +42,7 @@
             android:layout_height="wrap_content"
             android:spinnerMode="dropdown"
             android:popupBackground="@color/white"
+            android:paddingHorizontal="12dp"
             />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -29,7 +50,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:hint="Title">
+        android:hint="Title"
+        app:boxStrokeColor="@color/Green"
+        app:hintTextColor="@color/Green">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTitle"
@@ -43,7 +66,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:hint="URL">
+        android:hint="URL"
+        app:boxStrokeColor="@color/Green"
+        app:hintTextColor="@color/Green">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editUrl"

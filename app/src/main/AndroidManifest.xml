@@ -17,7 +17,7 @@
         android:icon="@drawable/app_logo"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CCEPedia"
+        android:theme="@style/Theme.IIUCPedia"
         tools:targetApi="31">
 
         <activity
@@ -30,7 +30,7 @@
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".Loading"
+            android:name=".LoadingActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

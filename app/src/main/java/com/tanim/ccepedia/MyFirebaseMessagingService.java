@@ -27,7 +27,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        String title = "CCE Pedia";
+        String title = "IIUC Pedia";
         String message = "You have a new notification!";
         String url = null;
 
@@ -88,8 +88,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "CCE Pedia Channel";
-            String description = "CCE Pedia Notifications";
+            CharSequence name = "IIUC Pedia Channel";
+            String description = "IIUC Pedia Notifications";
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
