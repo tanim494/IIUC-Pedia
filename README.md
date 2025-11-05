@@ -51,7 +51,7 @@ Key contributions include:
 
 | Home | Resources | PDF View | Community Chat |
 | :--- | :--- | :--- | :--- |
-|  |  |  |  |
+| (docs/screenshot/home.jpeg) |  |  |  |
 
 -----
 
