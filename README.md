@@ -57,15 +57,7 @@ Key contributions include:
 
 ## 🔗 Download APK
 
-👉 [**Download IIUC Pedia APK (Latest)**](https://iiuc-pedia.vercel.app/)
-
------
-
-## 🚀 Future Roadmap
-
-  * 🗂️ Add local SQLite caching for a full offline mode.
-  * 📅 Integrate a class routine or event calendar feature.
-  * 🔔 Add more targeted push notifications for specific departments or semesters.
+👉 [**Download IIUC Pedia APK (Latest)**](https://github.com/tanim494/IIUC-Pedia/releases/download/Release/IIUC.Pedia.v3.5.apk)
 
 -----
 
