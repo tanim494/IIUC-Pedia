@@ -50,8 +50,8 @@ Key contributions include:
 ## 📸 Screenshots
 
 | Home | Resources | PDF View | Community Chat |
-| :--- | :--- | :--- | :--- |
-| (docs/screenshot/home.jpeg) |  |  |  |
+|:---:|:---:|:---:|:---:|
+| ![Home Screenshot](docs/screenshot/home.jpeg) | ![Resources Screenshot](docs/screenshot/resources.jpeg) | ![PDF View](docs/screenshot/pdf.jpeg) | ![Community Chat](docs/screenshot/chats.jpeg) |
 
 -----
 
